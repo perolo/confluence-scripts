@@ -57,21 +57,11 @@ func main() {
 
 	Utilities.InitAD(cfg.Bindusername, cfg.Bindpassword)
 
-	var adGroupMembers,adUnames []string
+	var adUnames []string
 
-	//adGroupMembers, _ = Utilities.GetUsersInGroup(cfg.ADgroup)
 	adUnames, _ = Utilities.GetUnamesInGroup(cfg.ADgroup)
+	fmt.Printf("adUnames: %s \n", adUnames)
 
-	fmt.Printf("adGroupMembers: %s \n", adGroupMembers)
-	fmt.Printf("adUnames: %s \n", adUnames)
-/*
-	for _,adu := range adGroupMembers {
-		userDN, _ := Utilities.GetUserDN(adu)
-		fmt.Printf("uname: %s \n", userDN)
-		adUnames = append(adUnames,userDN)
-	}
-	fmt.Printf("adUnames: %s \n", adUnames)
-*/
 	confGroupMembers := confClient.GetGroupMembers(cfg.Confgroup)
 	var confGroupMemberNames []string
 
@@ -82,11 +72,11 @@ func main() {
 			}
 		}
 		fmt.Printf("confGroupMemberNames: %s \n", confGroupMemberNames)
-
 	}
 
 	notInConfluence := difference(adUnames,confGroupMemberNames)
 	fmt.Printf("notInConfluence: %s \n", notInConfluence)
+
 	notInAD := difference(confGroupMemberNames,adUnames)
 	fmt.Printf("notInAD: %s \n", notInAD)
 
@@ -99,8 +89,5 @@ func main() {
 		fmt.Printf("Users Added: %s \n", addUser.UsersAdded)
 		fmt.Printf("Users Skipped: %s \n", addUser.UsersSkipped)
 	}
-
-
 	Utilities.CloseAD()
-
 }
