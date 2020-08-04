@@ -32,3 +32,6 @@ password=password
 source=origin
 destination=copy
 ```
+
+## Sync AD Group
+Still not ready for release - needs internal utility - needs rework!
