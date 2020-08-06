@@ -32,12 +32,12 @@ func main() {
 
 	// or through Decode
 	type Config struct {
-		ConfHost    string `properties:"confhost"`
-		User        string `properties:"user"`
-		Pass        string `properties:"password"`
-		AddOperation bool `properties:"add"`
-		ADgroup       string `properties:"adgroup"`
-		Confgroup       string `properties:"confgroup"`
+		ConfHost     string `properties:"confhost"`
+		User         string `properties:"user"`
+		Pass         string `properties:"password"`
+		AddOperation bool   `properties:"add"`
+		ADgroup      string `properties:"adgroup"`
+		Confgroup    string `properties:"confgroup"`
 		Bindusername string `properties:"bindusername"`
 		Bindpassword string `properties:"bindpassword"`
 	}
@@ -66,21 +66,21 @@ func main() {
 	var confGroupMemberNames []string
 
 	if confGroupMembers.Status == "success" {
-		for _,v := range confGroupMembers.Users {
-			for kk,_ := range v {
+		for _, v := range confGroupMembers.Users {
+			for kk, _ := range v {
 				confGroupMemberNames = append(confGroupMemberNames, kk)
 			}
 		}
 		fmt.Printf("confGroupMemberNames: %s \n", confGroupMemberNames)
 	}
 
-	notInConfluence := difference(adUnames,confGroupMemberNames)
+	notInConfluence := difference(adUnames, confGroupMemberNames)
 	fmt.Printf("notInConfluence: %s \n", notInConfluence)
 
-	notInAD := difference(confGroupMemberNames,adUnames)
+	notInAD := difference(confGroupMemberNames, adUnames)
 	fmt.Printf("notInAD: %s \n", notInAD)
 
-	if (cfg.AddOperation) {
+	if cfg.AddOperation {
 		addUser := confClient.AddGroupMembers(cfg.Confgroup, notInConfluence)
 
 		fmt.Printf("Group: %s status: %s \n", cfg.Confgroup, addUser.Status)
