@@ -2,7 +2,7 @@ package main
 
 import (
 	"flag"
-	gitlabuserreport "git.aa.st/perolo/confluence-utils/GitLabUserReport"
+	"github.com/perolo/confluence-scripts/gitlabuserreport"
 )
 
 func main() {
