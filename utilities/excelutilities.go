@@ -3,7 +3,7 @@ package utilities
 import (
 	excelize "github.com/360EntSecGroup-Skylar/excelize"
 )
-var line,col int
+var line,col,auforFilterStartcol,auforFilterStartrow int
 var fexcel * excelize.File
 var sheet string
 func Check(e error) {
@@ -86,8 +86,27 @@ func SetCellFontHeader() {
 	err = fexcel.SetCellStyle(sheet, axis, axis, style)
 	Check(err)
 }
+func SetCellFontHeader2() {
+	axis, err := excelize.CoordinatesToCellName(col, line)
+	Check(err)
+	//var style excelize.Style
+	style, err := fexcel.NewStyle(`{"font":{"bold":true,"family":"Times New Roman","size":16,"color":"#777777"}}`)
+	Check(err)
+	err = fexcel.SetCellStyle(sheet, axis, axis, style)
+	Check(err)
+}
 
-func AutoFilter(uppperleft string) {
+func AutoFilterStart() {
+	auforFilterStartcol = col
+	auforFilterStartrow = line
+}
+func AutoFilterEnd() {
+	axis, err := excelize.CoordinatesToCellName(auforFilterStartcol, auforFilterStartrow)
+	Check(err)
+	autoFilter(axis)
+}
+
+func autoFilter(uppperleft string) {
 	rows, err := fexcel.GetRows(sheet)
 	Check(err)
 	nrows := len(rows)
