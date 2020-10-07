@@ -17,12 +17,12 @@ func Contains(a []string, x string) bool {
 }
 
 type SpacePermissionsModConfig struct {
-	ConfHost      string `properties:"confhost"`
-	User          string `properties:"user"`
-	Pass          string `properties:"password"`
-	Groups        bool   `properties:"groups"`
-	Users         bool   `properties:"users"`
-	Space         string `properties:"space"`
+	ConfHost string `properties:"confhost"`
+	User     string `properties:"user"`
+	Pass     string `properties:"password"`
+	Groups   bool   `properties:"groups"`
+	Users    bool   `properties:"users"`
+	//Space         string `properties:"space"`
 	SpaceCategory string `properties:"spacecategory"`
 	//File          string `properties:"file"`
 }
@@ -77,12 +77,8 @@ func Modify(cfg SpacePermissionsModConfig) {
 	spcont := true
 	var spaces *client.ConfluenceSpaceResult
 	for spcont {
-		if cfg.Space != "" && cfg.SpaceCategory == "" {
-			//TBD
-		} else {
-			spopt := client.SpaceOptions{Start: spstart, Limit: spincrease, Label: cfg.SpaceCategory}
-			spaces = theClient.GetSpaces(&spopt)
-		}
+		spopt := client.SpaceOptions{Start: spstart, Limit: spincrease, Label: cfg.SpaceCategory}
+		spaces = theClient.GetSpaces(&spopt)
 		opt := client.PaginationOptions{}
 		for _, space := range spaces.Results {
 			if space.Type == "global" {
@@ -98,45 +94,7 @@ func Modify(cfg SpacePermissionsModConfig) {
 						groups := theClient.GetAllGroupsWithAnyPermission(space.Key, &opt)
 						for _, group := range groups.Groups {
 							permissions := theClient.GetGroupPermissionsForSpace(space.Key, group)
-							if Contains(permissions.Permissions, selectedperm) {
-								if mode == "Display" {
-									fmt.Printf("Space: %s Permission\n", space.Name, selectedperm)
-								} else if mode == "Remove" {
-									fmt.Printf("Remove: %s \n", space.Name)
-									confirm := promptui.Prompt{
-										Label:     "Delete Permission",
-										IsConfirm: true,
-									}
-									ok, err := confirm.Run()
-
-									if err != nil {
-										fmt.Printf("Prompt failed %v\n", err)
-										return
-									}
-
-									fmt.Printf("You choose %q\n", ok)
-								}
-							} else {
-								//								fmt.Printf("X: %s \n", space.Name)
-								if mode == "Display" {
-									fmt.Printf("Space: %s Permission\n", space.Name, selectedperm)
-								} else if mode == "Add" {
-									fmt.Printf("Add: %s %s\n", space.Name, selectedperm)
-									confirm := promptui.Prompt{
-										Label:     "Add Permission",
-										IsConfirm: true,
-									}
-									ok, err := confirm.Run()
-
-									if err != nil {
-										fmt.Printf("Prompt failed %v\n", err)
-										return
-									}
-
-									fmt.Printf("You choose %q\n", ok)
-								}
-							}
-
+							ModifyPerm(permissions, selectedperm, mode, space, group)
 						}
 						start = start + increase
 						if groups.Total < increase {
@@ -144,36 +102,89 @@ func Modify(cfg SpacePermissionsModConfig) {
 						}
 					}
 				}
-				/*
-					if cfg.Users {
-						start := 0
-						cont := true
-						increase := 10
-						for cont {
-							opt.StartAt = start
-							opt.MaxResults = increase
-							users := theClient.GetAllUsersWithAnyPermission(space.Key, &opt)
-							for _, user := range users.Users {
-								permissions := theClient.GetUserPermissionsForSpace(space.Key, user)
-								for _, atype := range *types {
-									if Contains(permissions.Permissions, atype) {
-										fmt.Printf("X: %s \n", space.Name)
-									} else {
-										fmt.Printf("X: %s \n", space.Name)
-									}
-								}
-							}
-							start = start + increase
-							if users.Total < increase {
-								cont = false
-							}
+				if cfg.Users {
+					start := 0
+					cont := true
+					increase := 10
+					for cont {
+						opt.StartAt = start
+						opt.MaxResults = increase
+						users := theClient.GetAllUsersWithAnyPermission(space.Key, &opt)
+						for _, user := range users.Users {
+							permissions := theClient.GetUserPermissionsForSpace(space.Key, user)
+							ModifyPerm(permissions, selectedperm, mode, space, user)
 						}
-					}*/
+						start = start + increase
+						if users.Total < increase {
+							cont = false
+						}
+					}
+				}
 			}
 		}
 		spstart = spstart + spincrease
 		if spaces.Size < spincrease {
 			spcont = false
+		}
+	}
+}
+
+func ModifyPerm(permissions *client.GetPermissionsForSpaceType, selectedperm string, mode string, space client.SpaceType, user string) {
+	if Contains(permissions.Permissions, selectedperm) {
+		if mode == "Display" {
+			fmt.Printf("Display OK Space: %s Permission: %s for user: %s\n", space.Name, selectedperm, user)
+		} else if mode == "Remove" {
+			fmt.Printf("Remove Permission: %s in Space: %s for user: %s\n", selectedperm, space.Name, user)
+			confirm := promptui.Prompt{
+				Label:     "Delete Permission",
+				IsConfirm: true,
+			}
+			ok, _ := confirm.Run()
+			/*
+				if err != nil {
+					fmt.Printf("Prompt failed %v\n", err)
+					panic("Que")
+				}*/
+			if ok == "y" {
+				fmt.Printf("Removed permission: %s from Space: %s for user: %s\n", selectedperm, space.Name, user)
+			} else if ok == "N" {
+				fmt.Printf("Skipped Removing permission: %s from Space: %s for user: %s \n", selectedperm, space.Name, user)
+			} else {
+				panic("Que")
+			}
+		} else if mode == "Add" {
+			fmt.Printf("Skipped Add permission: %s to Space: %s for user: %s\n", selectedperm, space.Name, user)
+		} else {
+			panic("Que")
+		}
+	} else {
+		//								fmt.Printf("X: %s \n", space.Name)
+		if mode == "Display" {
+			fmt.Printf("Display NOK Space: %s Permission: %s for user: %s\n", space.Name, selectedperm, user)
+		} else if mode == "Add" {
+			fmt.Printf("Add permission: %s to Space: %s for user: %s\n", selectedperm, space.Name, user)
+			confirm := promptui.Prompt{
+				Label:     "Add Permission",
+				IsConfirm: true,
+			}
+			ok, _ := confirm.Run()
+			/*
+				if err != nil {
+					fmt.Printf("Prompt failed %v\n", err)
+					panic("Que")
+				}*/
+			if ok == "y" {
+				fmt.Printf("Added permission: %s from Space: %s for user: %s\n", selectedperm, space.Name, user)
+			} else if ok == "N" {
+				fmt.Printf("Skipped Add permission: %s from Space: %s for user: %s \n", selectedperm, space.Name, user)
+			} else {
+				panic("Que")
+			}
+
+		} else if mode == "Remove" {
+			fmt.Printf("Skipped Remove permission: %s to Space: %s for user: %s\n", selectedperm, space.Name, user)
+		} else {
+			panic("Que")
 		}
 	}
 }
