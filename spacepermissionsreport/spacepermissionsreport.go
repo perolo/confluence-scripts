@@ -23,7 +23,6 @@ type SpacePermissionsReportConfig struct {
 	Pass          string `properties:"password"`
 	Groups        bool   `properties:"groups"`
 	Users         bool   `properties:"users"`
-	Space         string `properties:"space"`
 	SpaceCategory string `properties:"spacecategory"`
 	File          string `properties:"file"`
 }
@@ -78,12 +77,8 @@ func SpacePermissionsReport(cfg SpacePermissionsReportConfig) {
 	spcont := true
 	var spaces *client.ConfluenceSpaceResult
 	for spcont {
-		if cfg.Space != "" && cfg.SpaceCategory == "" {
-			//TBD
-		} else {
-			spopt := client.SpaceOptions{Start: spstart, Limit: spincrease, Label: cfg.SpaceCategory}
-			spaces = theClient.GetSpaces(&spopt)
-		}
+		spopt := client.SpaceOptions{Start: spstart, Limit: spincrease, Label: cfg.SpaceCategory}
+		spaces = theClient.GetSpaces(&spopt)
 		opt := client.PaginationOptions{}
 		for _, space := range spaces.Results {
 			if space.Type == "global" {
