@@ -29,9 +29,18 @@ func ResetCol() {
 	col = 1
 }
 
-func WriteColumns(data []string) {
+func WriteColumnsHeaderln(data []string) {
 	for _, v := range data {
 		SetTableHeader()
+		WiteCell(v)
+		col++
+	}
+	col = 1
+	line++
+}
+
+func WriteColumns(data []string) {
+	for _, v := range data {
 		WiteCell(v)
 		col++
 	}
