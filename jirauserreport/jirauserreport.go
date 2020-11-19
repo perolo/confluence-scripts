@@ -38,8 +38,8 @@ func main() {
 		ExcelFile string `properties:"excelfile"`
 		/*
 			AddOperation bool   `properties:"add"`
-			ADgroup      string `properties:"adgroup"`
-			Confgroup    string `properties:"confgroup"`
+			AdGroup      string `properties:"adgroup"`
+			Localgroup    string `properties:"localgroup"`
 			Bindusername string `properties:"bindusername"`
 			Bindpassword string `properties:"bindpassword"`
 
@@ -137,10 +137,10 @@ func main() {
 
 	var adUnames []string
 
-	adUnames, _ = Utilities.GetUnamesInGroup(cfg.ADgroup)
+	adUnames, _ = Utilities.GetUnamesInGroup(cfg.AdGroup)
 	fmt.Printf("adUnames: %s \n", adUnames)
 
-	confGroupMembers := confClient.GetGroupMembers(cfg.Confgroup)
+	confGroupMembers := confClient.GetGroupMembers(cfg.Localgroup)
 	var confGroupMemberNames []string
 
 	if confGroupMembers.Status == "success" {
@@ -159,9 +159,9 @@ func main() {
 	fmt.Printf("notInAD: %s \n", notInAD)
 
 	if cfg.AddOperation {
-		addUser := confClient.AddGroupMembers(cfg.Confgroup, notInConfluence)
+		addUser := confClient.AddGroupMembers(cfg.Localgroup, notInConfluence)
 
-		fmt.Printf("Group: %s status: %s \n", cfg.Confgroup, addUser.Status)
+		fmt.Printf("Group: %s status: %s \n", cfg.Localgroup, addUser.Status)
 
 		fmt.Printf("Message: %s \n", addUser.Message)
 		fmt.Printf("Users Added: %s \n", addUser.UsersAdded)
