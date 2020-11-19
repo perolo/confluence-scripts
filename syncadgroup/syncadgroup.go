@@ -9,7 +9,7 @@ import (
 	"log"
 )
 
-func difference(a, b []string) []string {
+func difference(a []string, b map[string]string) []string {
 	mb := make(map[string]struct{}, len(b))
 	for _, x := range b {
 		mb[x] = struct{}{}
@@ -22,6 +22,21 @@ func difference(a, b []string) []string {
 	}
 	return diff
 }
+func difference2(a map[string]string, b []string) []string {
+	mb := make(map[string]struct{}, len(b))
+	for _, x := range b {
+		mb[x] = struct{}{}
+	}
+	var diff []string
+	for _, x := range a {
+		if _, found := mb[x]; !found {
+			diff = append(diff, x)
+		}
+	}
+	return diff
+}
+
+
 func main() {
 
 	propPtr := flag.String("prop", "../confluence.properties", "a string")
@@ -62,32 +77,44 @@ func main() {
 	adUnames, _ = Utilities.GetUnamesInGroup(cfg.ADgroup)
 	fmt.Printf("adUnames: %s \n", adUnames)
 
-	confGroupMembers := confClient.GetGroupMembers(cfg.Confgroup)
-	var confGroupMemberNames []string
+	confGroupMemberNames := make(map[string]string)
 
-	if confGroupMembers.Status == "success" {
-		for _, v := range confGroupMembers.Users {
-			for kk, _ := range v {
-				confGroupMemberNames = append(confGroupMemberNames, kk)
+	contconf := true
+	startconf := 0
+	maxconf := 20
+	for contconf {
+		confGroupMembers, _ := confClient.GetGroupMembers(cfg.Confgroup, &client.GetGroupMembersOptions{StartAt: startconf, MaxResults: maxconf, ShowBasicDetails: true})
+
+		//confGroupMembers := confClient.GetGroupMembers(cfg.Confgroup)
+
+		for _, confmember := range confGroupMembers.Users {
+			if _, ok := confGroupMemberNames[confmember.Name]; !ok {
+				confGroupMemberNames[confmember.Name] = confmember.Name
 			}
 		}
-		fmt.Printf("confGroupMemberNames: %s \n", confGroupMemberNames)
+		if len(confGroupMembers.Users) != maxconf {
+			contconf = false
+		} else {
+			startconf = startconf + maxconf
+		}
 	}
 
 	notInConfluence := difference(adUnames, confGroupMemberNames)
 	fmt.Printf("notInConfluence: %s \n", notInConfluence)
 
-	notInAD := difference(confGroupMemberNames, adUnames)
+	notInAD := difference2(confGroupMemberNames, adUnames)
 	fmt.Printf("notInAD: %s \n", notInAD)
 
 	if cfg.AddOperation {
-		addUser := confClient.AddGroupMembers(cfg.Confgroup, notInConfluence)
+		if notInConfluence != nil {
+			addUser := confClient.AddGroupMembers(cfg.Confgroup, notInConfluence)
 
-		fmt.Printf("Group: %s status: %s \n", cfg.Confgroup, addUser.Status)
+			fmt.Printf("Group: %s status: %s \n", cfg.Confgroup, addUser.Status)
 
-		fmt.Printf("Message: %s \n", addUser.Message)
-		fmt.Printf("Users Added: %s \n", addUser.UsersAdded)
-		fmt.Printf("Users Skipped: %s \n", addUser.UsersSkipped)
+			fmt.Printf("Message: %s \n", addUser.Message)
+			fmt.Printf("Users Added: %s \n", addUser.UsersAdded)
+			fmt.Printf("Users Skipped: %s \n", addUser.UsersSkipped)
+		}
 	}
 	Utilities.CloseAD()
 }
