@@ -8,14 +8,7 @@ import (
 	"github.com/perolo/confluence-prop/client"
 	"log"
 )
-type GroupSyncType struct {
-	AdGroup    string
-	LocalGroup string
-}
-var GroupSyncs = []GroupSyncType{
-	{AdGroup: "AD Group 1", LocalGroup: "Local 1"},
-	{AdGroup: "AD Group 2", LocalGroup: "Local 2"},
-}
+
 func difference(a []string, b map[string]string) []string {
 	mb := make(map[string]struct{}, len(b))
 	for _, x := range b {
@@ -114,25 +107,25 @@ func main2() {
 	ad_utils.InitAD(cfg.Bindusername, cfg.Bindpassword)
 
 	var adUnames []string
-	confGroupMemberNames := make(map[string]string)
+	toolGroupMemberNames := make(map[string]string)
 
-	SyncGroupInConfluence(adUnames, cfg, confClient, confGroupMemberNames)
+	SyncGroupInConfluence(adUnames, cfg, confClient, toolGroupMemberNames)
 	ad_utils.CloseAD()
 }
 
-func SyncGroupInConfluence(adUnames []string, cfg Config, confClient *client.ConfluenceClient, confGroupMemberNames map[string]string) {
+func SyncGroupInConfluence(adUnames []string, cfg Config, confClient *client.ConfluenceClient, toolGroupMemberNames map[string]string) {
 	fmt.Printf("\n")
 	fmt.Printf("SyncGroupInConfluence AdGroup: %s LocalGroup: %s \n", cfg.AdGroup, cfg.Localgroup)
 	fmt.Printf("\n")
 	adUnames, _ = ad_utils.GetUnamesInGroup(cfg.AdGroup)
-	fmt.Printf("adUnames: %s \n", adUnames)
+	fmt.Printf("adUnames(%v): %s \n", len(adUnames), adUnames)
 
-	getUnamesInConfluenceGroup(confClient, cfg, confGroupMemberNames)
+	getUnamesInConfluenceGroup(confClient, cfg, toolGroupMemberNames)
 
-	notInConfluence := difference(adUnames, confGroupMemberNames)
-	fmt.Printf("notInConfluence: %s \n", notInConfluence)
+	notInConfluence := difference(adUnames, toolGroupMemberNames)
+	fmt.Printf("notInConfluence(%v): %s \n", len(notInConfluence), notInConfluence)
 
-	notInAD := difference2(confGroupMemberNames, adUnames)
+	notInAD := difference2(toolGroupMemberNames, adUnames)
 	fmt.Printf("notInAD: %s \n", notInAD)
 
 	if cfg.AddOperation {
@@ -150,21 +143,24 @@ func SyncGroupInConfluence(adUnames []string, cfg Config, confClient *client.Con
 }
 
 func getUnamesInConfluenceGroup(confClient *client.ConfluenceClient, cfg Config, confGroupMemberNames map[string]string) {
-	contconf := true
-	startconf := 0
-	maxconf := 20
-	for contconf {
-		confGroupMembers, _ := confClient.GetGroupMembers(cfg.Localgroup, &client.GetGroupMembersOptions{StartAt: startconf, MaxResults: maxconf, ShowBasicDetails: true})
+	cont := true
+	start := 0
+	max := 50
+	for cont {
+		confGroupMembers, err := confClient.GetGroupMembers(cfg.Localgroup, &client.GetGroupMembersOptions{StartAt: start, MaxResults: max, ShowBasicDetails: true})
+		if err != nil {
+			panic(err)
+		}
 
 		for _, confmember := range confGroupMembers.Users {
 			if _, ok := confGroupMemberNames[confmember.Name]; !ok {
 				confGroupMemberNames[confmember.Name] = confmember.Name
 			}
 		}
-		if len(confGroupMembers.Users) != maxconf {
-			contconf = false
+		if len(confGroupMembers.Users) != max {
+			cont = false
 		} else {
-			startconf = startconf + maxconf
+			start = start + max
 		}
 	}
 }
