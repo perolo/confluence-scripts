@@ -66,7 +66,7 @@ func endReport(cfg Config) {
 
 func main() {
 
-	propPtr := flag.String("prop", "../confluence.properties", "a string")
+	propPtr := flag.String("prop", "confluence.properties", "a string")
 
 	flag.Parse()
 
@@ -77,35 +77,36 @@ func main() {
 		log.Fatal(err)
 	}
 
+	toolClient := toollogin(cfg)
+
 	initReport(cfg)
-
-	var config = client.ConfluenceConfig{}
-	config.Username = cfg.User
-	config.Password = cfg.Pass
-	config.URL = cfg.ConfHost
-	config.Debug = false
-
-	confClient := client.Client(&config)
-
 	ad_utils.InitAD(cfg.Bindusername, cfg.Bindpassword)
 
 	if cfg.Simple {
-		SyncGroupInConfluence(cfg, confClient)
+		SyncGroupInTool(cfg, toolClient)
 	} else {
 		for _, syn := range GroupSyncs {
-			//var adUnames []ad_utils.ADUser
 			cfg.AdGroup = syn.AdGroup
 			cfg.Localgroup = syn.LocalGroup
-			SyncGroupInConfluence(cfg, confClient)
+			SyncGroupInTool(cfg, toolClient)
 		}
 	}
 	endReport(cfg)
 	ad_utils.CloseAD()
 }
 
-func SyncGroupInConfluence(cfg Config, confClient *client.ConfluenceClient) {
+func toollogin(cfg Config) *client.ConfluenceClient {
+	var config = client.ConfluenceConfig{}
+	config.Username = cfg.User
+	config.Password = cfg.Pass
+	config.URL = cfg.ConfHost
+	config.Debug = false
+
+	return client.Client(&config)
+}
+
+func SyncGroupInTool(cfg Config, client *client.ConfluenceClient) {
 	var toolGroupMemberNames map[string]ad_utils.ADUser
-	toolGroupMemberNames = make(map[string]ad_utils.ADUser)
 	fmt.Printf("\n")
 	fmt.Printf("SyncGroup AdGroup: %s LocalGroup: %s \n", cfg.AdGroup, cfg.Localgroup)
 	fmt.Printf("\n")
@@ -118,24 +119,21 @@ func SyncGroupInConfluence(cfg Config, confClient *client.ConfluenceClient) {
 	if cfg.Report {
 		if !cfg.Limited {
 			for _, adu := range adUnames {
-				//			var row = []string{"AD group", "group", "fun", "Name", "Uname"}
 				var row = []string{"AD Names", cfg.AdGroup, cfg.Localgroup, adu.Name, adu.Uname}
 				excelutils.WriteColumnsln(row)
 			}
 		}
 		for _, aderr := range aderrs {
-			//			var row = []string{"AD group", "group", "fun", "Name", "Uname"}
 			var row = []string{"AD Errors", cfg.AdGroup, cfg.Localgroup, aderr.Name, aderr.Uname, aderr.Err}
 			excelutils.WriteColumnsln(row)
 		}
 
 	}
 	if cfg.Localgroup != "" {
-		getUnamesInConfluenceGroup(confClient, cfg.Localgroup, toolGroupMemberNames)
+		toolGroupMemberNames = getUnamesInConfluenceGroup(client, cfg.Localgroup)
 		if cfg.Report {
 			if !cfg.Limited {
 				for _, tgm := range toolGroupMemberNames {
-					//			var row = []string{"AD group", "group", "fun", "Name", "Uname"}
 					var row = []string{"JIRA Users", cfg.AdGroup, cfg.Localgroup, tgm.Name, tgm.Uname}
 					excelutils.WriteColumnsln(row)
 				}
@@ -144,12 +142,11 @@ func SyncGroupInConfluence(cfg Config, confClient *client.ConfluenceClient) {
 	}
 
 	if cfg.Localgroup != "" && cfg.AdGroup != "" {
-		notInConfluence := ad_utils.Difference(adUnames, toolGroupMemberNames)
-		fmt.Printf("notInConfluence(%v): %s \n", len(notInConfluence), notInConfluence)
+		notInTool := ad_utils.Difference(adUnames, toolGroupMemberNames)
+		fmt.Printf("notInConfluence(%v): %s \n", len(notInTool), notInTool)
 		if cfg.Report {
-			for _, nji := range notInConfluence {
-				//			var row = []string{"AD group", "group", "fun", "Name", "Uname"}
-				var row = []string{"Not in JIRA", cfg.AdGroup, cfg.Localgroup, nji.Name, nji.Uname}
+			for _, nji := range notInTool {
+				var row = []string{"Not in Confluence", cfg.AdGroup, cfg.Localgroup, nji.Name, nji.Uname}
 				excelutils.WriteColumnsln(row)
 			}
 		}
@@ -158,48 +155,46 @@ func SyncGroupInConfluence(cfg Config, confClient *client.ConfluenceClient) {
 		fmt.Printf("notInAD: %s \n", notInAD)
 		if cfg.Report {
 			for _, nad := range notInAD {
-				//			var row = []string{"AD group", "group", "fun", "Name", "Uname"}
 				var row = []string{"Not in AD", cfg.AdGroup, cfg.Localgroup, nad.Name, nad.Uname}
 				excelutils.WriteColumnsln(row)
 			}
 		}
 
 		if cfg.AddOperation {
-
-			for _, notin := range notInConfluence {
-				addUser := confClient.AddGroupMembers(cfg.Localgroup, []string{notin.Uname})
-
+			for _, notin := range notInTool {
+				addUser := client.AddGroupMembers(cfg.Localgroup, []string{notin.Uname})
 				fmt.Printf("Group: %s status: %s \n", cfg.Localgroup, addUser.Status)
 				fmt.Printf("Message: %s \n", addUser.Message)
 				fmt.Printf("Users Added: %s \n", addUser.UsersAdded)
 				fmt.Printf("Users Skipped: %s \n", addUser.UsersSkipped)
-
 			}
 		}
 	}
 }
-func getUnamesInConfluenceGroup(confClient *client.ConfluenceClient, localgroup string, confGroupMemberNames map[string]ad_utils.ADUser) {
+func getUnamesInConfluenceGroup(confClient *client.ConfluenceClient, localgroup string)  map[string]ad_utils.ADUser {
+	groupMemberNames := make(map[string]ad_utils.ADUser)
 	cont := true
 	start := 0
 	max := 50
 	for cont {
-		confGroupMembers, err := confClient.GetGroupMembers(localgroup, &client.GetGroupMembersOptions{StartAt: start, MaxResults: max, ShowBasicDetails: true})
+		groupMembers, err := confClient.GetGroupMembers(localgroup, &client.GetGroupMembersOptions{StartAt: start, MaxResults: max, ShowBasicDetails: true})
 		if err != nil {
 			panic(err)
 		}
 
-		for _, confmember := range confGroupMembers.Users {
-			if _, ok := confGroupMemberNames[confmember.Name]; !ok {
+		for _, member := range groupMembers.Users {
+			if _, ok := groupMemberNames[member.Name]; !ok {
 				var newUser ad_utils.ADUser
-				newUser.Uname = confmember.Name
-				newUser.Name = confmember.FullName
-				confGroupMemberNames[confmember.Name] = newUser
+				newUser.Uname = member.Name
+				newUser.Name = member.FullName
+				groupMemberNames[member.Name] = newUser
 			}
 		}
-		if len(confGroupMembers.Users) != max {
+		if len(groupMembers.Users) != max {
 			cont = false
 		} else {
 			start = start + max
 		}
 	}
+	return groupMemberNames
 }
