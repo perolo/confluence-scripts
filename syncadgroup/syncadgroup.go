@@ -1,4 +1,4 @@
-package main
+package syncadgroup
 
 import (
 	"flag"
@@ -73,10 +73,12 @@ func endReport(cfg Config) {
 	}
 }
 
-func main() {
-	propPtr := flag.String("prop", "confluence.properties", "a string")
+//func main() {
+func ConfluenceSyncAdGroup(propPtr string) {
+
+//	propPtr := flag.String("prop", "confluence.properties", "a string")
 	flag.Parse()
-	p := properties.MustLoadFile(*propPtr, properties.ISO_8859_1)
+	p := properties.MustLoadFile(propPtr, properties.ISO_8859_1)
 	var cfg Config
 	if err := p.Decode(&cfg); err != nil {
 		log.Fatal(err)
@@ -111,9 +113,9 @@ func SyncGroupInTool(cfg Config, client *client.ConfluenceClient) {
 	fmt.Printf("\n")
 	fmt.Printf("SyncGroup AdGroup: %s LocalGroup: %s \n", cfg.AdGroup, cfg.Localgroup)
 	fmt.Printf("\n")
-	var adUnames, aderrs []ad_utils.ADUser
+	var adUnames []ad_utils.ADUser
 	if cfg.AdGroup != "" {
-		adUnames, _, aderrs = ad_utils.GetUnamesInGroup(cfg.AdGroup)
+		adUnames, _ = ad_utils.GetUnamesInGroup(cfg.AdGroup)
 		fmt.Printf("adUnames(%v): %s \n", len(adUnames), adUnames)
 	}
 	if cfg.Report {
@@ -122,10 +124,6 @@ func SyncGroupInTool(cfg Config, client *client.ConfluenceClient) {
 				var row = []string{"AD Names", cfg.AdGroup, cfg.Localgroup, adu.Name, adu.Uname, adu.Mail, adu.Err, adu.DN}
 				excelutils.WriteColumnsln(row)
 			}
-		}
-		for _, aderr := range aderrs {
-			var row = []string{"AD Errors", cfg.AdGroup, cfg.Localgroup, aderr.Name, aderr.Uname, aderr.Mail, aderr.Err, aderr.DN}
-			excelutils.WriteColumnsln(row)
 		}
 	}
 	if cfg.Localgroup != "" {
