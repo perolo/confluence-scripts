@@ -51,7 +51,7 @@ func CreateAdHierarchiesReport(propPtr, adgroup string) {
 	groups, hier := ad_utils.ExpandHierarchy(adgroup, roothier)
 	fmt.Printf("adUnames(%v): %s \n", len(groups), groups)
 	fmt.Printf("adUnames(%v): %s \n", len(hier), hier)
-	copt.Title = "GTT Hierarchies"
+	copt.Title = "GTT Hierarchies - " + adgroup
 	copt.SpaceKey = "~per.olofsson@assaabloy.com"
 	utilities.CreateAttachmentAndUpload(hier, copt, confluence)
 

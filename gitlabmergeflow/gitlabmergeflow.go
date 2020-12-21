@@ -1,10 +1,11 @@
-package gitlabmergestatus
+package gitlabmergeflow
 
 import (
 	"fmt"
 	"git.aa.st/perolo/confluence-utils/Utilities"
 	"github.com/magiconair/properties"
 	"github.com/perolo/confluence-prop/client"
+	"github.com/perolo/confluence-scripts/gitlabmergestatus"
 	"github.com/perolo/confluence-scripts/utilities"
 	"github.com/xanzy/go-gitlab"
 	"log"
@@ -55,7 +56,7 @@ func GitLabMergeReport(propPtr string) {
 	var data Data
 	var copt client.OperationOptions
 	var confluence *client.ConfluenceClient
-	fmt.Printf("%%%%%%%%%%  GitLab Merge Report %%%%%%%%%%%%%%\n")
+	fmt.Printf("%%%%%%%%%%  GitLab Merge Flow %%%%%%%%%%%%%%\n")
 
 	p := properties.MustLoadFile(propPtr, properties.ISO_8859_1)
 
@@ -75,8 +76,8 @@ func GitLabMergeReport(propPtr string) {
 
 	}
 
-	for _, report := range Reports{
-		mergecfg.PageName = report.PageName
+	for _, report := range gitlabmergestatus.Reports{
+		mergecfg.PageName = report.PageName + "-flow"
 		mergecfg.GitLabHost = report.Host
 		mergecfg.GitProjId = report.ProjId
 		mergecfg.GitLabtoken = report.Token
@@ -96,21 +97,25 @@ func createProjectReport(confluence *client.ConfluenceClient, data Data, copt cl
 
 	count := make(map[string]int)
 
-	state := "opened"
+	//state := "opened"
 	var opt2 gitlab.ListProjectMergeRequestsOptions
 	opt2.Page = 0
 	opt2.PerPage = 100
-	opt2.State = &state
-	openmerges, _, err := gitlabclient.MergeRequests.ListProjectMergeRequests(cfg.GitProjId, &opt2, nil)
+	window := time.Now().AddDate(0, 0, -14)
+	opt2.UpdatedAfter = &window
+	master := "master"
+	opt2.TargetBranch = &master
+	//opt2.State = &state
+	flowmerges, _, err := gitlabclient.MergeRequests.ListProjectMergeRequests(cfg.GitProjId, &opt2, nil)
 	Utilities.Check(err)
 
-	for _, merge := range openmerges {
+	for _, merge := range flowmerges {
 
 		fmt.Printf("Merge: %s Author: %s Upvotes: %d Downvotes: %d\n", merge.Title, merge.Author.Name, merge.Upvotes, merge.Downvotes)
 		participants, _, err := gitlabclient.MergeRequests.GetMergeRequestParticipants(cfg.GitProjId, merge.Iid, nil)
 		Utilities.Check(err)
 		for _, participant := range participants {
-			//fmt.Printf("  participant: %s\n", participant.Name)
+//			fmt.Printf("  participant: %s\n", participant.Name)
 			if _, ok := count[participant.Name]; !ok {
 				count[participant.Name] = 1
 			} else {
@@ -124,7 +129,15 @@ func createProjectReport(confluence *client.ConfluenceClient, data Data, copt cl
 			i.Status = merge.MergeStatus
 			i.Link = merge.WebURL
 			i.Start = merge.CreatedAt.Format("2006, 01, 02")
-			i.End = time.Now().Format("2006, 01, 02")
+			if merge.State == "merged" {
+				fmt.Printf("MergeStatus: %s State: %s Target: %s\n", merge.MergeStatus, merge.State, merge.TargetBranch)
+				i.End = merge.MergedAt.Format("2006, 01, 02")
+			} else {
+				fmt.Printf("MergeStatus: %s State: %s Target: %s\n", merge.MergeStatus, merge.State, merge.TargetBranch)
+
+				i.End = time.Now().Format("2006, 01, 02")
+
+			}
 			i.UpVotes = merge.Upvotes
 			i.DownVotes = merge.Downvotes
 			data.Merges = append(data.Merges, i)
