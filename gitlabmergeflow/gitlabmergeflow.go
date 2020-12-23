@@ -15,18 +15,17 @@ import (
 
 // or through Decode
 type Config struct {
-	User             string `properties:"user"`
-	Pass             string `properties:"password"`
-	ConfHost         string `properties:"confhost"`
+	User     string `properties:"user"`
+	Pass     string `properties:"password"`
+	ConfHost string `properties:"confhost"`
 }
 type MergConfig struct {
 	GitLabHost       string `properties:"gitlabhost"`
 	GitLabtoken      string `properties:"gitlabtoken"`
 	GitProjId        int    `properties:"gitlabprojid"`
-	PageName string `properties:"pagename"`
+	PageName         string `properties:"pagename"`
 	CreateAttachment bool   `properties:"createattachment"`
 }
-
 
 type Data struct {
 	Project string            `json:"project"`
@@ -39,6 +38,7 @@ type MergeData struct {
 	Author       string `json:"author"`
 	Start        string `json:"start"`
 	End          string `json:"end"`
+	State        string `json:"state"`
 	Status       string `json:"status"`
 	Title        string `json:"title"`
 	Link         string `json:"link"`
@@ -50,7 +50,7 @@ type ContributorData struct {
 	Contributions int    `json:"contributions"`
 }
 
-func GitLabMergeReport(propPtr string) {
+func GitLabMergeFlowReport(propPtr string) {
 	var cfg Config
 	var mergecfg MergConfig
 	var data Data
@@ -76,7 +76,7 @@ func GitLabMergeReport(propPtr string) {
 
 	}
 
-	for _, report := range gitlabmergestatus.Reports{
+	for _, report := range gitlabmergestatus.Reports {
 		mergecfg.PageName = report.PageName + "-flow"
 		mergecfg.GitLabHost = report.Host
 		mergecfg.GitProjId = report.ProjId
@@ -99,50 +99,60 @@ func createProjectReport(confluence *client.ConfluenceClient, data Data, copt cl
 
 	//state := "opened"
 	var opt2 gitlab.ListProjectMergeRequestsOptions
-	opt2.Page = 0
-	opt2.PerPage = 100
 	window := time.Now().AddDate(0, 0, -14)
 	opt2.UpdatedAfter = &window
 	master := "master"
 	opt2.TargetBranch = &master
-	//opt2.State = &state
-	flowmerges, _, err := gitlabclient.MergeRequests.ListProjectMergeRequests(cfg.GitProjId, &opt2, nil)
-	Utilities.Check(err)
 
-	for _, merge := range flowmerges {
+	cont := true
+	page := 0
+	opt2.PerPage = 100
 
-		fmt.Printf("Merge: %s Author: %s Upvotes: %d Downvotes: %d\n", merge.Title, merge.Author.Name, merge.Upvotes, merge.Downvotes)
-		participants, _, err := gitlabclient.MergeRequests.GetMergeRequestParticipants(cfg.GitProjId, merge.Iid, nil)
+	for cont {
+		opt2.Page = page
+
+		flowmerges, _, err := gitlabclient.MergeRequests.ListProjectMergeRequests(cfg.GitProjId, &opt2, nil)
 		Utilities.Check(err)
-		for _, participant := range participants {
-//			fmt.Printf("  participant: %s\n", participant.Name)
-			if _, ok := count[participant.Name]; !ok {
-				count[participant.Name] = 1
-			} else {
-				count[participant.Name] = count[participant.Name] + 1
+
+		for _, merge := range flowmerges {
+
+			fmt.Printf("Merge: %s Author: %s Upvotes: %d Downvotes: %d\n", merge.Title, merge.Author.Name, merge.Upvotes, merge.Downvotes)
+			participants, _, err := gitlabclient.MergeRequests.GetMergeRequestParticipants(cfg.GitProjId, merge.Iid, nil)
+			Utilities.Check(err)
+			for _, participant := range participants {
+				//			fmt.Printf("  participant: %s\n", participant.Name)
+				if _, ok := count[participant.Name]; !ok {
+					count[participant.Name] = 1
+				} else {
+					count[participant.Name] = count[participant.Name] + 1
+				}
 			}
-		}
-		if cfg.CreateAttachment {
-			var i MergeData
-			i.Title = merge.Title
-			i.Author = merge.Author.Name
-			i.Status = merge.MergeStatus
-			i.Link = merge.WebURL
-			i.Start = merge.CreatedAt.Format("2006, 01, 02")
-			if merge.State == "merged" {
-				fmt.Printf("MergeStatus: %s State: %s Target: %s\n", merge.MergeStatus, merge.State, merge.TargetBranch)
-				i.End = merge.MergedAt.Format("2006, 01, 02")
-			} else {
-				fmt.Printf("MergeStatus: %s State: %s Target: %s\n", merge.MergeStatus, merge.State, merge.TargetBranch)
-
-				i.End = time.Now().Format("2006, 01, 02")
-
+			if cfg.CreateAttachment {
+				var i MergeData
+				i.Title = merge.Title
+				i.Author = merge.Author.Name
+				i.State = merge.State
+				i.Status = merge.MergeStatus
+				i.Link = merge.WebURL
+				i.Start = merge.CreatedAt.Format("2006, 01, 02")
+				if merge.State == "merged" {
+					fmt.Printf("MergeStatus: %s State: %s Target: %s\n", merge.MergeStatus, merge.State, merge.TargetBranch)
+					i.End = merge.MergedAt.Format("2006, 01, 02")
+				} else {
+					fmt.Printf("MergeStatus: %s State: %s Target: %s\n", merge.MergeStatus, merge.State, merge.TargetBranch)
+					i.End = time.Now().Format("2006, 01, 02")
+				}
+				i.UpVotes = merge.Upvotes
+				i.DownVotes = merge.Downvotes
+				data.Merges = append(data.Merges, i)
 			}
-			i.UpVotes = merge.Upvotes
-			i.DownVotes = merge.Downvotes
-			data.Merges = append(data.Merges, i)
-		}
 
+		}
+		if len(flowmerges) != opt2.PerPage {
+			cont = false
+		} else {
+			page++
+		}
 	}
 	fmt.Printf("\n")
 	fmt.Printf("Top List: \n")
@@ -176,4 +186,3 @@ func createProjectReport(confluence *client.ConfluenceClient, data Data, copt cl
 		utilities.CreateAttachmentAndUpload(data, copt, confluence)
 	}
 }
-

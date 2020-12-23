@@ -9,5 +9,5 @@ func main() {
 	propPtr := flag.String("prop", "gitlabmergestatus.properties", "a properties file")
 
 	flag.Parse()
-	gitlabmergeflow.GitLabMergeReport(*propPtr)
+	gitlabmergeflow.GitLabMergeFlowReport(*propPtr)
 }
