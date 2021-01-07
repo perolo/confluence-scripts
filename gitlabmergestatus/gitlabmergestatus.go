@@ -28,6 +28,7 @@ type MergConfig struct {
 
 type Data struct {
 	Project string            `json:"project"`
+	Description string        `json:"description"`
 	Merges  []MergeData       `json:"mergerequests"`
 	TopList []ContributorData `json:"toplist"`
 }
@@ -88,6 +89,7 @@ func GitLabMergeReport(propPtr string) {
 func createProjectReport(confluence *client.ConfluenceClient, data Data, copt client.OperationOptions, cfg MergConfig) {
 	if cfg.CreateAttachment {
 		data.Project = fmt.Sprintf("Project Id: %v", cfg.GitProjId)
+		data.Description = "Open Merge Requests"
 	}
 	gitlabclient, err := gitlab.NewClient(cfg.GitLabtoken, gitlab.WithBaseURL(cfg.GitLabHost))
 	if err != nil {
@@ -110,7 +112,7 @@ func createProjectReport(confluence *client.ConfluenceClient, data Data, copt cl
 		for _, merge := range openmerges {
 
 			fmt.Printf("Merge: %s Author: %s Upvotes: %d Downvotes: %d\n", merge.Title, merge.Author.Name, merge.Upvotes, merge.Downvotes)
-			participants, _, err := gitlabclient.MergeRequests.GetMergeRequestParticipants(cfg.GitProjId, merge.Iid, nil)
+			participants, _, err := gitlabclient.MergeRequests.GetMergeRequestParticipants(cfg.GitProjId, merge.IID, nil)
 			Utilities.Check(err)
 			for _, participant := range participants {
 				//fmt.Printf("  participant: %s\n", participant.Name)
