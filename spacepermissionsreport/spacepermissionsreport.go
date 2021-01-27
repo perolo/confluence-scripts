@@ -1,9 +1,14 @@
 package spacepermissionsreport
 
 import (
+	"flag"
 	"fmt"
+	"github.com/magiconair/properties"
 	"github.com/perolo/confluence-prop/client"
+	"github.com/perolo/confluence-scripts/utilities"
 	"github.com/perolo/excel-utils"
+	"log"
+	"path/filepath"
 	"time"
 )
 
@@ -17,7 +22,7 @@ func Contains(a []string, x string) bool {
 	return false
 }
 
-type SpacePermissionsReportConfig struct {
+type ReportConfig struct {
 	ConfHost      string `properties:"confhost"`
 	User          string `properties:"user"`
 	Pass          string `properties:"password"`
@@ -25,9 +30,35 @@ type SpacePermissionsReportConfig struct {
 	Users         bool   `properties:"users"`
 	SpaceCategory string `properties:"spacecategory"`
 	File          string `properties:"file"`
+	Simple        bool   `properties:"simple"`
+	Report        bool   `properties:"report"`
 }
 
-func SpacePermissionsReport(cfg SpacePermissionsReportConfig) {
+func SpacePermissionsReport(propPtr string) {
+
+	flag.Parse()
+
+	p := properties.MustLoadFile(propPtr, properties.ISO_8859_1)
+
+	// or through Decode
+	var cfg ReportConfig
+	if err := p.Decode(&cfg); err != nil {
+		log.Fatal(err)
+	}
+	if cfg.Simple {
+		cfg.File = fmt.Sprintf(cfg.File, "-"+cfg.SpaceCategory)
+		CreateSpacePermissionsReport(cfg)
+	} else {
+		reportBase := cfg.File
+		for _, category := range Categories {
+			cfg.SpaceCategory = category
+			cfg.File = fmt.Sprintf(reportBase, "-"+category)
+			CreateSpacePermissionsReport(cfg)
+		}
+	}
+}
+
+func CreateSpacePermissionsReport(cfg ReportConfig) {
 
 	excelutils.NewFile()
 
@@ -52,32 +83,30 @@ func SpacePermissionsReport(cfg SpacePermissionsReportConfig) {
 	excelutils.NextLine()
 	excelutils.AutoFilterStart()
 	excelutils.SetTableHeader()
-	excelutils.WiteCell("Space")
+	excelutils.WiteCell("Space Name")
 	excelutils.SetTableHeader()
-	excelutils.WiteCell("Key")
-	excelutils.SetCellStyleRotate()
+	excelutils.NextCol()
+	excelutils.SetTableHeader()
+	excelutils.WiteCell("Space Key")
+	//excelutils.SetCellStyleRotate()
 	excelutils.NextCol()
 	excelutils.SetTableHeader()
 	excelutils.WiteCell("Type")
-	excelutils.SetCellStyleRotate()
-	excelutils.NextCol()
-	excelutils.SetTableHeader()
-	excelutils.WiteCell("Group")
-	excelutils.SetCellStyleRotate()
+	//excelutils.SetCellStyleRotate()
 	excelutils.NextCol()
 	excelutils.SetTableHeader()
 	excelutils.WiteCell("Name")
-	excelutils.SetCellStyleRotate()
+	//excelutils.SetCellStyleRotate()
 	excelutils.NextCol()
 	excelutils.SetCellStyleRotateN(len(*types))
 	excelutils.WriteColumnsln([]string (*types))
 	noSpaces := 0
 	spstart := 0
-	spincrease := 10
+	spincrease := 50
 	spcont := true
 	var spaces *client.ConfluenceSpaceResult
 	for spcont {
-		spopt := client.SpaceOptions{Start: spstart, Limit: spincrease, Label: cfg.SpaceCategory}
+		spopt := client.SpaceOptions{Start: spstart, Limit: spincrease, Label: cfg.SpaceCategory, Type: "global"}
 		spaces = theClient.GetSpaces(&spopt)
 		opt := client.PaginationOptions{}
 		for _, space := range spaces.Results {
@@ -87,7 +116,7 @@ func SpacePermissionsReport(cfg SpacePermissionsReportConfig) {
 				if cfg.Groups {
 					start := 0
 					cont := true
-					increase := 10
+					increase := 50
 					for cont {
 						opt.StartAt = start
 						opt.MaxResults = increase
@@ -111,16 +140,17 @@ func SpacePermissionsReport(cfg SpacePermissionsReportConfig) {
 							}
 							excelutils.NextLine()
 						}
-						start = start + increase
-						if groups.Total < increase {
+						if groups.Total < start + increase {
 							cont = false
+						} else {
+							start = start + increase
 						}
 					}
 				}
 				if cfg.Users {
 					start := 0
 					cont := true
-					increase := 10
+					increase := 50
 					for cont {
 						opt.StartAt = start
 						opt.MaxResults = increase
@@ -144,25 +174,41 @@ func SpacePermissionsReport(cfg SpacePermissionsReportConfig) {
 							}
 							excelutils.NextLine()
 						}
-						start = start + increase
-						if users.Total < increase {
+						if users.Total < start + increase {
 							cont = false
+						} else {
+							start = start + increase
 						}
 					}
 				}
 			}
 		}
-		spstart = spstart + spincrease
 		if spaces.Size < spincrease {
 			spcont = false
+		} else {
+			spstart = spstart + spincrease
 		}
-
 	}
 	excelutils.AutoFilterEnd()
 
-	excelutils.SetColWidth("A","A",40)
-	excelutils.SetColWidth("B","D",30)
-	excelutils.SetColWidth("E","R",5)
+	excelutils.SetColWidth("A", "A", 40)
+	excelutils.SetColWidth("B", "D", 30)
+	excelutils.SetColWidth("E", "R", 5)
 	// Save xlsx file by the given path.
 	excelutils.SaveAs(cfg.File)
+	if cfg.Report {
+		var config = client.ConfluenceConfig{}
+		var copt client.OperationOptions
+		config.Username = cfg.User
+		config.Password = cfg.Pass
+		config.URL = cfg.ConfHost
+		config.Debug = false
+		confluenceClient := client.Client(&config)
+
+		copt.Title = "Space Permissions Reports"
+		copt.SpaceKey = "AAAD"
+		_, name := filepath.Split(cfg.File)
+		utilities.AddAttachmentAndUpload(confluenceClient, copt, name , cfg.File)
+
+	}
 }

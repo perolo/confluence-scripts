@@ -48,12 +48,15 @@ func CreateAdHierarchiesReport(propPtr, adgroup string) {
 	newhierarchy.Parent = ""
 	roothier = append(roothier, newhierarchy)
 
-	groups, hier := ad_utils.ExpandHierarchy(adgroup, roothier)
-	fmt.Printf("adUnames(%v): %s \n", len(groups), groups)
-	fmt.Printf("adUnames(%v): %s \n", len(hier), hier)
-	copt.Title = "GTT Hierarchies - " + adgroup
-	copt.SpaceKey = "~per.olofsson@assaabloy.com"
-	utilities.CreateAttachmentAndUpload(hier, copt, confluence)
-
+	groups, hier, err := ad_utils.ExpandHierarchy(adgroup, roothier)
+	if err != nil {
+		fmt.Printf("Failed to parse AD hierarchy : %s \n", err)
+	} else {
+		fmt.Printf("adUnames(%v): %s \n", len(groups), groups)
+		fmt.Printf("adUnames(%v): %s \n", len(hier), hier)
+		copt.Title = "GTT Hierarchies - " + adgroup
+		copt.SpaceKey = "~per.olofsson@assaabloy.com"
+		utilities.CreateAttachmentAndUpload(hier, copt, confluence)
+	}
 	ad_utils.CloseAD()
 }
