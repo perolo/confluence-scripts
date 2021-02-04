@@ -53,6 +53,7 @@ func SpacePermissionsReport(propPtr string) {
 		for _, category := range Categories {
 			cfg.SpaceCategory = category
 			cfg.File = fmt.Sprintf(reportBase, "-"+category)
+			fmt.Printf("Category: %s \n", category)
 			CreateSpacePermissionsReport(cfg)
 		}
 	}

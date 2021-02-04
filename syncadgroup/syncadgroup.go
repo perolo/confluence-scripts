@@ -68,6 +68,7 @@ func initReport(cfg Config) {
 func endReport(cfg Config) {
 	if cfg.Report {
 		file := fmt.Sprintf(cfg.File, "-Confluence")
+		excelutils.SetColWidth("A", "A", 60)
 		excelutils.AutoFilterEnd()
 		excelutils.SaveAs(file)
 	}
@@ -147,7 +148,7 @@ func SyncGroupInTool(cfg Config, client *client.ConfluenceClient) {
 			}
 		}
 		notInAD := ad_utils.Difference2(toolGroupMemberNames, adUnames)
-		fmt.Printf("notInAD: %s \n", notInAD)
+		fmt.Printf("notInAD(%v): %s \n", len(notInAD),notInAD)
 		if cfg.Report {
 			for _, nad := range notInAD {
 				var row = []string{"Tool user group member not found in AD", cfg.AdGroup, cfg.Localgroup, nad.Name, nad.Uname, nad.Mail, nad.Err, nad.DN}
