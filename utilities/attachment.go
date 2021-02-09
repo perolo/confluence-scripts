@@ -11,7 +11,7 @@ import (
 	"fmt"
 )
 
-func CreateAttachmentAndUpload(data interface{}, copt client.OperationOptions, confluence *client.ConfluenceClient) {
+func CreateAttachmentAndUpload(data interface{}, copt client.OperationOptions, confluence *client.ConfluenceClient, comment string) {
 	buf, err := json.Marshal(data)
 	if err != nil {
 		log.Fatal(err)
@@ -26,16 +26,16 @@ func CreateAttachmentAndUpload(data interface{}, copt client.OperationOptions, c
 	err = ff.Close()
 	Utilities.Check(err)
 
-	AddAttachmentAndUpload(confluence, copt, attname, ff.Name())
+	AddAttachmentAndUpload(confluence, copt, attname, ff.Name(), comment)
 }
 
-func AddAttachmentAndUpload(confluence *client.ConfluenceClient, copt client.OperationOptions, attname string, fname string) {
+func AddAttachmentAndUpload(confluence *client.ConfluenceClient, copt client.OperationOptions, attname string, fname string, comment string) {
 	results := confluence.SearchPages(copt.Title, copt.SpaceKey)
 	if results.Size == 1 {
 		attId, _, err := confluence.GetPageAttachmentById(results.Results[0].ID, attname)
 		if err != nil {
 			if attId != nil && attId.Size == 0 {
-				_, _, err = confluence.AddAttachment(results.Results[0].ID, attname, fname, "Added with theReport Report")
+				_, _, err = confluence.AddAttachment(results.Results[0].ID, attname, fname, comment)
 				if err != nil {
 					log.Fatal(err)
 				} else {
