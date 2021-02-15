@@ -45,7 +45,7 @@ func AddAttachmentAndUpload(confluence *client.ConfluenceClient, copt client.Ope
 				log.Fatal(err)
 			}
 		} else {
-			_, _, err = confluence.UpdateAttachment(results.Results[0].ID, attId.Results[0].ID, attname, fname, "Updated with theReport Report")
+			_, _, err = confluence.UpdateAttachment(results.Results[0].ID, attId.Results[0].ID, attname, fname, comment)
 			if err != nil {
 				log.Fatal(err)
 			}
