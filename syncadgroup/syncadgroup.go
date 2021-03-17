@@ -95,7 +95,6 @@ func endReport(cfg Config) {
 	}
 }
 
-//func main() {
 func ConfluenceSyncAdGroup(propPtr string) {
 
 	//	propPtr := flag.String("prop", "confluence.properties", "a string")
@@ -153,7 +152,7 @@ func SyncGroupInTool(cfg Config, client *client.ConfluenceClient) {
 		if cfg.Report {
 			if !cfg.Limited {
 				for _, tgm := range toolGroupMemberNames {
-					var row = []string{"JIRA Users", cfg.AdGroup, cfg.Localgroup, tgm.Name, tgm.Uname, tgm.Mail, tgm.Err, tgm.DN}
+					var row = []string{"Confluence Users", cfg.AdGroup, cfg.Localgroup, tgm.Name, tgm.Uname, tgm.Mail, tgm.Err, tgm.DN}
 					excelutils.WriteColumnsln(row)
 				}
 			}

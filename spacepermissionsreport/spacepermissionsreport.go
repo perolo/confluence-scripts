@@ -100,7 +100,7 @@ func CreateSpacePermissionsReport(cfg ReportConfig) {
 	//excelutils.SetCellStyleRotate()
 	excelutils.NextCol()
 	excelutils.SetCellStyleRotateN(len(*types))
-	excelutils.WriteColumnsln([]string (*types))
+	excelutils.WriteColumnsln(*types)
 	noSpaces := 0
 	spstart := 0
 	spincrease := 50
@@ -141,7 +141,7 @@ func CreateSpacePermissionsReport(cfg ReportConfig) {
 							}
 							excelutils.NextLine()
 						}
-						if groups.Total < start + increase {
+						if groups.Total < start+increase {
 							cont = false
 						} else {
 							start = start + increase
@@ -175,7 +175,7 @@ func CreateSpacePermissionsReport(cfg ReportConfig) {
 							}
 							excelutils.NextLine()
 						}
-						if users.Total < start + increase {
+						if users.Total < start+increase {
 							cont = false
 						} else {
 							start = start + increase
@@ -209,7 +209,7 @@ func CreateSpacePermissionsReport(cfg ReportConfig) {
 		copt.Title = "Space Permissions Reports"
 		copt.SpaceKey = "AAAD"
 		_, name := filepath.Split(cfg.File)
-		utilities.AddAttachmentAndUpload(confluenceClient, copt, name , cfg.File, "Created by Space Permissions Report")
+		utilities.AddAttachmentAndUpload(confluenceClient, copt, name, cfg.File, "Created by Space Permissions Report")
 
 	}
 }

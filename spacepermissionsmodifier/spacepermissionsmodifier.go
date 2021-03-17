@@ -2,8 +2,8 @@ package spacepermissionsmodifier
 
 import (
 	"fmt"
-	"github.com/perolo/confluence-prop/client"
 	"github.com/manifoldco/promptui"
+	"github.com/perolo/confluence-prop/client"
 )
 
 // Contains tells whether a contains x.

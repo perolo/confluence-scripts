@@ -36,8 +36,6 @@ func RemoveSpaceCategory(propPtr string) {
 
 	conf = client.Client(&config)
 
-
-
 	start := 0
 	increase := 50
 
@@ -56,7 +54,7 @@ func RemoveSpaceCategory(propPtr string) {
 					id = cat.ID
 				}
 			}
-			if (found) {
+			if found {
 				fmt.Printf("Remove Label: %s from Space: %s \n", cfg.SearchLabel, space.Name)
 				conf.RemoveSpaceCategory(space.Key, id)
 			} else {

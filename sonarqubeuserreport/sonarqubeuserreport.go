@@ -44,7 +44,7 @@ func Sonarqubeuserreport(propPtr string) {
 		fmt.Printf("Group: %s\n", agroup.Name)
 		members := sonarClient.GetGroupMembers(agroup.ID)
 		for _, member := range members.Users {
-			fmt.Printf("	Member: %s Login: \n", member.Name, member.Login)
+			fmt.Printf("	Member: %s Login: %s \n", member.Name, member.Login)
 		}
 	}
 }
