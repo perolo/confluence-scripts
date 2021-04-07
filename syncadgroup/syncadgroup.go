@@ -90,7 +90,11 @@ func endReport(cfg Config) {
 			copt.SpaceKey = "STPIM"
 			_, name := filepath.Split(file)
 			cfg.ConfAttName = name
-			utilities.AddAttachmentAndUpload(confluenceClient, copt, name, file, "Created by Sync AD group")
+			err := utilities.AddAttachmentAndUpload(confluenceClient, copt, name, file, "Created by Sync AD group")
+			if (err!= nil) {
+				panic(err)
+			}
+
 		}
 	}
 }
@@ -113,6 +117,7 @@ func ConfluenceSyncAdGroup(propPtr string) {
 		for _, syn := range GroupSyncs {
 			cfg.AdGroup = syn.AdGroup
 			cfg.Localgroup = syn.LocalGroup
+			cfg.AddOperation = syn.DoAdd
 			SyncGroupInTool(cfg, toolClient)
 		}
 	}
@@ -137,7 +142,7 @@ func SyncGroupInTool(cfg Config, client *client.ConfluenceClient) {
 	var adUnames []ad_utils.ADUser
 	if cfg.AdGroup != "" {
 		adUnames, _ = ad_utils.GetUnamesInGroup(cfg.AdGroup)
-		fmt.Printf("adUnames(%v): %s \n", len(adUnames), adUnames)
+		fmt.Printf("adUnames(%v)\n", len(adUnames))
 	}
 	if cfg.Report {
 		if !cfg.Limited {
@@ -160,7 +165,7 @@ func SyncGroupInTool(cfg Config, client *client.ConfluenceClient) {
 	}
 	if cfg.Localgroup != "" && cfg.AdGroup != "" {
 		notInTool := ad_utils.Difference(adUnames, toolGroupMemberNames)
-		fmt.Printf("Not In Tool(%v): %s \n", len(notInTool), notInTool)
+		fmt.Printf("Not In Tool(%v)\n", len(notInTool))
 		if cfg.Report {
 			for _, nji := range notInTool {
 				var row = []string{"AD group users not found in Tool user group", cfg.AdGroup, cfg.Localgroup, nji.Name, nji.Uname, nji.Mail, nji.Err, nji.DN}
@@ -168,10 +173,40 @@ func SyncGroupInTool(cfg Config, client *client.ConfluenceClient) {
 			}
 		}
 		notInAD := ad_utils.Difference2(toolGroupMemberNames, adUnames)
-		fmt.Printf("notInAD(%v): %s \n", len(notInAD), notInAD)
+		fmt.Printf("notInAD(%v)\n", len(notInAD))
 		if cfg.Report {
 			for _, nad := range notInAD {
-				var row = []string{"Tool user group member not found in AD", cfg.AdGroup, cfg.Localgroup, nad.Name, nad.Uname, nad.Mail, nad.Err, nad.DN}
+				if nad.DN == "" {
+
+					dn, err := ad_utils.GetActiveUserDN(nad.Uname)
+					if (err==nil){
+						nad.DN = dn.DN
+						nad.Mail = dn.Mail
+					} else {
+						udn, err := ad_utils.GetAllUserDN(nad.Uname)
+						if (err==nil){
+							nad.DN = udn.DN
+							nad.Mail = udn.Mail
+							nad.Err = "Deactivated"
+						} else {
+							edn, err := ad_utils.GetAllEmailDN(nad.Mail)
+							if (err==nil){
+								nad.DN = edn[0].DN
+								nad.Mail = edn[0].Mail
+								nad.Err = edn[0].Err
+								for _, ldn := range edn {
+									var row2 = []string{"Tool user group member not found in AD group (multiple?)", cfg.AdGroup, cfg.Localgroup, nad.Name, nad.Uname, ldn.Mail, ldn.Err, ldn.DN}
+									excelutils.WriteColumnsln(row2)
+								}
+							} else {
+
+								nad.Err = err.Error()
+							}
+						}
+					}
+
+				}
+				var row = []string{"Tool user group member not found in AD group", cfg.AdGroup, cfg.Localgroup, nad.Name, nad.Uname, nad.Mail, nad.Err, nad.DN}
 				excelutils.WriteColumnsln(row)
 			}
 		}

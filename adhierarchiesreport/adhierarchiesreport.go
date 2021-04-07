@@ -56,7 +56,11 @@ func CreateAdHierarchiesReport(propPtr, adgroup string) {
 		fmt.Printf("adUnames(%v): %s \n", len(hier), hier)
 		copt.Title = "GTT Hierarchies - " + adgroup
 		copt.SpaceKey = "~per.olofsson@assaabloy.com"
-		utilities.CreateAttachmentAndUpload(hier, copt, confluence, "Created by AD Hierarchies Report")
+		err = utilities.CreateAttachmentAndUpload(hier, copt, confluence, "Created by AD Hierarchies Report")
+		if (err!= nil) {
+			panic(err)
+		}
+
 	}
 	ad_utils.CloseAD()
 }

@@ -209,7 +209,11 @@ func CreateSpacePermissionsReport(cfg ReportConfig) {
 		copt.Title = "Space Permissions Reports"
 		copt.SpaceKey = "AAAD"
 		_, name := filepath.Split(cfg.File)
-		utilities.AddAttachmentAndUpload(confluenceClient, copt, name, cfg.File, "Created by Space Permissions Report")
+		err := utilities.AddAttachmentAndUpload(confluenceClient, copt, name, cfg.File, "Created by Space Permissions Report")
+		if (err!= nil) {
+			panic(err)
+		}
+
 
 	}
 }

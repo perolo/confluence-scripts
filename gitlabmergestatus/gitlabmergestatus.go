@@ -172,6 +172,9 @@ func createProjectReport(confluence *client.ConfluenceClient, data Data, copt cl
 	if cfg.CreateAttachment {
 		copt.Title = cfg.PageName
 		copt.SpaceKey = "~per.olofsson@assaabloy.com"
-		utilities.CreateAttachmentAndUpload(data, copt, confluence, "Created by GitLab Merge Status Report")
+		err = utilities.CreateAttachmentAndUpload(data, copt, confluence, "Created by GitLab Merge Status Report")
+		if (err!= nil) {
+			panic(err)
+		}
 	}
 }
