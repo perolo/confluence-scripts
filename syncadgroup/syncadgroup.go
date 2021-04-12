@@ -71,7 +71,7 @@ func initReport(cfg Config) {
 	}
 }
 
-func endReport(cfg Config) {
+func endReport(cfg Config) error {
 	if cfg.Report {
 		file := fmt.Sprintf(cfg.File, "-Confluence")
 		excelutils.SetColWidth("A", "A", 60)
@@ -90,13 +90,11 @@ func endReport(cfg Config) {
 			copt.SpaceKey = "STPIM"
 			_, name := filepath.Split(file)
 			cfg.ConfAttName = name
-			err := utilities.AddAttachmentAndUpload(confluenceClient, copt, name, file, "Created by Sync AD group")
-			if (err!= nil) {
-				panic(err)
-			}
+			return utilities.AddAttachmentAndUpload(confluenceClient, copt, name, file, "Created by Sync AD group")
 
 		}
 	}
+	return nil
 }
 
 func ConfluenceSyncAdGroup(propPtr string) {
@@ -110,7 +108,7 @@ func ConfluenceSyncAdGroup(propPtr string) {
 	}
 	toolClient := toollogin(cfg)
 	initReport(cfg)
-	ad_utils.InitAD(cfg.Bindusername, cfg.Bindpassword)
+	adutils.InitAD(cfg.Bindusername, cfg.Bindpassword)
 	if cfg.Simple {
 		SyncGroupInTool(cfg, toolClient)
 	} else {
@@ -121,8 +119,11 @@ func ConfluenceSyncAdGroup(propPtr string) {
 			SyncGroupInTool(cfg, toolClient)
 		}
 	}
-	endReport(cfg)
-	ad_utils.CloseAD()
+	err := endReport(cfg)
+	if err != nil {
+		panic(err)
+	}
+	adutils.CloseAD()
 }
 
 func toollogin(cfg Config) *client.ConfluenceClient {
@@ -135,13 +136,13 @@ func toollogin(cfg Config) *client.ConfluenceClient {
 }
 
 func SyncGroupInTool(cfg Config, client *client.ConfluenceClient) {
-	var toolGroupMemberNames map[string]ad_utils.ADUser
+	var toolGroupMemberNames map[string]adutils.ADUser
 	fmt.Printf("\n")
 	fmt.Printf("SyncGroup AdGroup: %s LocalGroup: %s \n", cfg.AdGroup, cfg.Localgroup)
 	fmt.Printf("\n")
-	var adUnames []ad_utils.ADUser
+	var adUnames []adutils.ADUser
 	if cfg.AdGroup != "" {
-		adUnames, _ = ad_utils.GetUnamesInGroup(cfg.AdGroup)
+		adUnames, _ = adutils.GetUnamesInGroup(cfg.AdGroup)
 		fmt.Printf("adUnames(%v)\n", len(adUnames))
 	}
 	if cfg.Report {
@@ -164,7 +165,7 @@ func SyncGroupInTool(cfg Config, client *client.ConfluenceClient) {
 		}
 	}
 	if cfg.Localgroup != "" && cfg.AdGroup != "" {
-		notInTool := ad_utils.Difference(adUnames, toolGroupMemberNames)
+		notInTool := adutils.Difference(adUnames, toolGroupMemberNames)
 		fmt.Printf("Not In Tool(%v)\n", len(notInTool))
 		if cfg.Report {
 			for _, nji := range notInTool {
@@ -172,25 +173,25 @@ func SyncGroupInTool(cfg Config, client *client.ConfluenceClient) {
 				excelutils.WriteColumnsln(row)
 			}
 		}
-		notInAD := ad_utils.Difference2(toolGroupMemberNames, adUnames)
+		notInAD := adutils.Difference2(toolGroupMemberNames, adUnames)
 		fmt.Printf("notInAD(%v)\n", len(notInAD))
 		if cfg.Report {
 			for _, nad := range notInAD {
 				if nad.DN == "" {
 
-					dn, err := ad_utils.GetActiveUserDN(nad.Uname)
-					if (err==nil){
+					dn, err := adutils.GetActiveUserDN(nad.Uname)
+					if err == nil {
 						nad.DN = dn.DN
 						nad.Mail = dn.Mail
 					} else {
-						udn, err := ad_utils.GetAllUserDN(nad.Uname)
-						if (err==nil){
+						udn, err := adutils.GetAllUserDN(nad.Uname)
+						if err == nil {
 							nad.DN = udn.DN
 							nad.Mail = udn.Mail
 							nad.Err = "Deactivated"
 						} else {
-							edn, err := ad_utils.GetAllEmailDN(nad.Mail)
-							if (err==nil){
+							edn, err := adutils.GetAllEmailDN(nad.Mail)
+							if err == nil {
 								nad.DN = edn[0].DN
 								nad.Mail = edn[0].Mail
 								nad.Err = edn[0].Err
@@ -215,6 +216,7 @@ func SyncGroupInTool(cfg Config, client *client.ConfluenceClient) {
 				if notin.Err == "" {
 					addUser := client.AddGroupMembers(cfg.Localgroup, []string{notin.Uname})
 					fmt.Printf("Group: %s status: %s \n", cfg.Localgroup, addUser.Status)
+
 					fmt.Printf("Message: %s \n", addUser.Message)
 					fmt.Printf("Users Added: %s \n", addUser.UsersAdded)
 					fmt.Printf("Users Skipped: %s \n", addUser.UsersSkipped)
@@ -242,8 +244,8 @@ func SyncGroupInTool(cfg Config, client *client.ConfluenceClient) {
 
 	}
 }
-func getUnamesInToolGroup(theClient *client.ConfluenceClient, localgroup string) map[string]ad_utils.ADUser {
-	groupMemberNames := make(map[string]ad_utils.ADUser)
+func getUnamesInToolGroup(theClient *client.ConfluenceClient, localgroup string) map[string]adutils.ADUser {
+	groupMemberNames := make(map[string]adutils.ADUser)
 	cont := true
 	start := 0
 	max := 50
@@ -254,7 +256,7 @@ func getUnamesInToolGroup(theClient *client.ConfluenceClient, localgroup string)
 		}
 		for _, member := range groupMembers.Users {
 			if _, ok := groupMemberNames[member.Name]; !ok {
-				var newUser ad_utils.ADUser
+				var newUser adutils.ADUser
 				newUser.Uname = member.Name
 				newUser.Name = member.FullName
 				newUser.Mail = member.Email

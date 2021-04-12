@@ -40,15 +40,15 @@ func CreateAdHierarchiesReport(propPtr, adgroup string) {
 
 	confluence = client.Client(&config)
 
-	ad_utils.InitAD(cfg.Bindusername, cfg.Bindpassword)
+	adutils.InitAD(cfg.Bindusername, cfg.Bindpassword)
 	//cfg.AdGroup = "#AAAB - Group Technology Team"
-	var roothier [] ad_utils.ADHierarchy
-	var newhierarchy ad_utils.ADHierarchy
+	var roothier [] adutils.ADHierarchy
+	var newhierarchy adutils.ADHierarchy
 	newhierarchy.Name = adgroup
 	newhierarchy.Parent = ""
 	roothier = append(roothier, newhierarchy)
 
-	groups, hier, err := ad_utils.ExpandHierarchy(adgroup, roothier)
+	groups, hier, err := adutils.ExpandHierarchy(adgroup, roothier)
 	if err != nil {
 		fmt.Printf("Failed to parse AD hierarchy : %s \n", err)
 	} else {
@@ -62,5 +62,5 @@ func CreateAdHierarchiesReport(propPtr, adgroup string) {
 		}
 
 	}
-	ad_utils.CloseAD()
+	adutils.CloseAD()
 }
