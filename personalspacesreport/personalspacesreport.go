@@ -124,10 +124,10 @@ func CreatePersonalSpacesReport(cfg ReportConfig) {
 			for cont {
 				opt.StartAt = start
 				opt.MaxResults = increase
-				users := theClient.GetAllUsersWithAnyPermission(space.Key, &opt)
+				users, _ := theClient.GetAllUsersWithAnyPermission(space.Key, &opt)
 				excelutils.NextCol()
 				for _, user := range users.Users {
-					permissions := theClient.GetUserPermissionsForSpace(space.Key, user)
+					permissions, _ := theClient.GetUserPermissionsForSpace(space.Key, user)
 					if Contains(permissions.Permissions, "SETPAGEPERMISSIONS") {
 						_, err := adutils.GetActiveUserDN(user)
 						if err == nil {

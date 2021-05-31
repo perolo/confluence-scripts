@@ -21,7 +21,7 @@ type Config struct {
 
 
 //func main() {
-func CreateAdHierarchiesReport(propPtr, adgroup string) {
+func CreateAdHierarchiesReport(propPtr, adgroup string, expandUsers bool) {
 	var copt client.OperationOptions
 	var confluence *client.ConfluenceClient
 
@@ -52,10 +52,22 @@ func CreateAdHierarchiesReport(propPtr, adgroup string) {
 	if err != nil {
 		fmt.Printf("Failed to parse AD hierarchy : %s \n", err)
 	} else {
+		hier = append(hier, roothier...)
 		fmt.Printf("adUnames(%v): %s \n", len(groups), groups)
 		fmt.Printf("adUnames(%v): %s \n", len(hier), hier)
 		copt.Title = "GTT Hierarchies - " + adgroup
 		copt.SpaceKey = "~per.olofsson@assaabloy.com"
+		if expandUsers {
+			for _, h := range hier {
+				users, _ := adutils.GetUnamesInGroup(h.Name)
+				for _, u := range users {
+					hier = append(hier,adutils.ADHierarchy{Name: u.Name, Parent: h.Name})
+				}
+			}
+
+		}
+
+		utilities.CheckPageExists(copt, confluence)
 		err = utilities.CreateAttachmentAndUpload(hier, copt, confluence, "Created by AD Hierarchies Report")
 		if (err!= nil) {
 			panic(err)

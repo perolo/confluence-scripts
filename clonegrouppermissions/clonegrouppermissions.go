@@ -1,11 +1,11 @@
 package main
 
 import (
-	"github.com/perolo/confluence-prop/client"
 	"flag"
-	"github.com/magiconair/properties"
-	"log"
 	"fmt"
+	"github.com/magiconair/properties"
+	"github.com/perolo/confluence-prop/client"
+	"log"
 )
 
 func main() {
@@ -39,7 +39,7 @@ func main() {
 
 	start := 0
 	cont := true
-	increase := 10
+	increase := 50
 
 	noSpaces := 0
 	for cont {
@@ -48,14 +48,22 @@ func main() {
 
 		for _, space := range spaces.Spaces {
 			fmt.Printf("Space name: %s\n", space.Name)
-			p := space.Permissions
-			added := theClient.AddSpacePermissionsForGroup(space.Key, cfg.Destination, p)
-			fmt.Printf("Permissions added : %s\n", added.Added)
-			noSpaces++
+//			opt2 := client.SpaceOptions{Start: 0, Limit: 10,  Status: "current", SpaceKey: space.Key}
+//			opt2 := client.SpaceOptions{Start: 0, Limit: 10,  Status: "current", SpaceKey: space.Key}
+//			spaces := theClient.GetSpaces(&opt2)
+//			if (spaces.Size ==1 ) {
+				p := space.Permissions
+				added := theClient.AddSpacePermissionsForGroup(space.Key, cfg.Destination, p)
+				fmt.Printf("Permissions added : %s\n", added.Added)
+				noSpaces++
+//			} else {
+//				fmt.Printf("Archived Space : %s %v\n", space.Name, spaces.Size )
+
+//			}
 		}
 
 		start = start + increase
-		if spaces.Total < increase {
+		if spaces.Total < start {
 			cont = false
 		}
 	}

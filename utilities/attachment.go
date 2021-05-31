@@ -2,14 +2,67 @@ package utilities
 
 import (
 	"encoding/json"
+	"fmt"
 	"git.aa.st/perolo/confluence-utils/Utilities"
 	"github.com/kennygrant/sanitize"
 	"github.com/perolo/confluence-prop/client"
 	"io/ioutil"
 	"log"
+	"net/url"
 	"os"
-	"fmt"
 )
+
+func CheckPageExists(copt client.OperationOptions, confluence *client.ConfluenceClient){
+
+
+	opt2 := client.PageOptions{Start: 0, Limit: 10}
+	/*
+		https://confluence.assaabloy.net/rest/api/content?spaceKey=STPIM&expand=metadata.labels
+		https://confluence.assaabloy.net/rest/api/content?
+	*/
+	content := fmt.Sprintf("spaceKey=%s&title=%s" ,copt.SpaceKey,  url.QueryEscape(copt.Title))
+
+	pages := confluence.GetContent(content, &opt2)
+
+	for _, page := range pages.Results {
+		fmt.Printf("Pages name: %s type: %s\n", page.Title, page.Type)
+	}
+
+	if (len(pages.Results) == 0) {
+
+		f, err := ioutil.TempFile(os.TempDir(), "page*.html")
+		if err != nil {
+			return
+		}
+		if f == nil {
+			return
+		}
+
+		defer f.Close()
+		//	defer os.Remove(f.Name())
+//		var copt client.OperationOptions
+
+//		copt.Title = "Group User Report: " + group
+//		copt.SpaceKey = cfg.Space
+//		Utilities.Check(err)
+		copt.Filepath = f.Name()
+		copt.BodyOnly = true
+
+		Utilities.WriteHeader2(f, "Introduction")
+		Utilities.WriteParagraf(f, "Please Do not edit this page!")
+		Utilities.WriteParagraf(f, "This page is created by the Ad User Report script: "+Utilities.WrapLink("https://github.com/perolo/confluence-scripts", "confluence-utils"))
+		Utilities.WriteParagraf(f, "The report is uploaded as attachment to this page")
+
+		confluence.AddPage(copt.Title, copt.SpaceKey, copt.Filepath, true, false, 0)
+
+/*
+		if confluence.AddOrUpdatePage(copt) {
+			fmt.Printf("%s uploaded ok", copt.Title)
+		}
+*/
+	}
+}
+
 
 func CreateAttachmentAndUpload(data interface{}, copt client.OperationOptions, confluence *client.ConfluenceClient, comment string) error {
 	buf, err := json.Marshal(data)

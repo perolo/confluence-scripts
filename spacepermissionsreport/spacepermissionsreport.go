@@ -155,14 +155,24 @@ func CreateSpacePermissionsReport(cfg ReportConfig) {
 					for cont {
 						opt.StartAt = start
 						opt.MaxResults = increase
-						users := theClient.GetAllUsersWithAnyPermission(space.Key, &opt)
+
+						users, resp := theClient.GetAllUsersWithAnyPermission(space.Key, &opt)
+						if resp.StatusCode < 200 || resp.StatusCode > 300 {
+							// one restry...
+							users, _ = theClient.GetAllUsersWithAnyPermission(space.Key, &opt)
+						}
+						//users, err := retry(3,200, theClient.GetAllUsersWithAnyPermission(space.Key, &opt))
 						excelutils.NextCol()
 						for _, user := range users.Users {
 							excelutils.ResetCol()
 							excelutils.WiteCellnc(space.Name)
 							excelutils.WiteCellnc(space.Key)
 							excelutils.WiteCellnc("User")
-							permissions := theClient.GetUserPermissionsForSpace(space.Key, user)
+							permissions, resp := theClient.GetUserPermissionsForSpace(space.Key, user)
+							if resp.StatusCode < 200 || resp.StatusCode > 300 {
+								// one restry...
+								permissions, resp = theClient.GetUserPermissionsForSpace(space.Key, user)
+							}
 							excelutils.WiteCellnc(user)
 							for _, atype := range *types {
 								if Contains(permissions.Permissions, atype) {
@@ -210,7 +220,7 @@ func CreateSpacePermissionsReport(cfg ReportConfig) {
 		copt.SpaceKey = "AAAD"
 		_, name := filepath.Split(cfg.File)
 		err := utilities.AddAttachmentAndUpload(confluenceClient, copt, name, cfg.File, "Created by Space Permissions Report")
-		if (err!= nil) {
+		if err!= nil {
 			panic(err)
 		}
 
