@@ -54,11 +54,10 @@ func initReport(cfg Config) {
 		excelutils.WiteCellln("")
 		excelutils.SetCellFontHeader2()
 		excelutils.WiteCellln("Group Mapping")
+		excelutils.WriteColumnsHeaderln([]string{"AD Group", "Local group", "Add", "Remove", "Ad Count", "Local Count"})
 		if cfg.Simple {
-			excelutils.WriteColumnsHeaderln([]string{"AD Group", "Local group", "Add", "Remove"})
 			excelutils.WriteColumnsln([]string{cfg.AdGroup, cfg.Localgroup, strconv.FormatBool(cfg.AddOperation), strconv.FormatBool(cfg.RemoveOperation)})
 		} else {
-			excelutils.WriteColumnsHeaderln([]string{"AD Group", "Local group", "Add", "Remove"})
 			for _, syn := range GroupSyncs {
 				if (syn.InConfluence) {
 					excelutils.WriteColumnsln([]string{syn.AdGroup, syn.LocalGroup, excelutils.BoolToEmoji(syn.DoAdd), excelutils.BoolToEmoji(syn.DoRemove)})
@@ -111,11 +110,14 @@ func ConfluenceSyncAdGroup(propPtr string) {
 	toolClient := toollogin(cfg)
 	initReport(cfg)
 	adutils.InitAD(cfg.Bindusername, cfg.Bindpassword)
+	x := 15
 	if cfg.Simple {
 		SyncGroupInTool(cfg, toolClient)
 	} else {
 		for _, syn := range GroupSyncs {
-			if (!syn.InJira && !syn.InConfluence) {
+			syn.AdCount = 0
+			syn.GroupCount = 0
+			if !syn.InJira && !syn.InConfluence {
 				log.Fatal("Error in setup")
 			}
 			if syn.InConfluence {
@@ -123,8 +125,11 @@ func ConfluenceSyncAdGroup(propPtr string) {
 				cfg.Localgroup = syn.LocalGroup
 				cfg.AddOperation = syn.DoAdd
 				cfg.RemoveOperation = syn.DoRemove
-				SyncGroupInTool(cfg, toolClient)
-			}
+				syn.AdCount, syn.GroupCount = SyncGroupInTool(cfg, toolClient)
+			} // Dirty Solution - find a better?
+			excelutils.SetCell(fmt.Sprintf("%v", syn.AdCount), 5, x)
+			excelutils.SetCell(fmt.Sprintf("%v", syn.GroupCount), 6, x)
+			x = x+1
 		}
 	}
 	err := endReport(cfg)
@@ -143,7 +148,7 @@ func toollogin(cfg Config) *client.ConfluenceClient {
 	return client.Client(&config)
 }
 
-func SyncGroupInTool(cfg Config, client *client.ConfluenceClient) {
+func SyncGroupInTool(cfg Config, client *client.ConfluenceClient) (adcount int,  localcount int){
 	var toolGroupMemberNames map[string]adutils.ADUser
 	fmt.Printf("\n")
 	fmt.Printf("SyncGroup AdGroup: %s LocalGroup: %s \n", cfg.AdGroup, cfg.Localgroup)
@@ -160,6 +165,7 @@ func SyncGroupInTool(cfg Config, client *client.ConfluenceClient) {
 				excelutils.WriteColumnsln(row)
 			}
 		}
+		adcount = len(adUnames)
 	}
 	if cfg.Localgroup != "" {
 		toolGroupMemberNames = getUnamesInToolGroup(client, cfg.Localgroup)
@@ -171,6 +177,7 @@ func SyncGroupInTool(cfg Config, client *client.ConfluenceClient) {
 				}
 			}
 		}
+		localcount = len(toolGroupMemberNames)
 	}
 	if cfg.Localgroup != "" && cfg.AdGroup != "" {
 		notInTool := adutils.Difference(adUnames, toolGroupMemberNames)
@@ -269,6 +276,7 @@ func SyncGroupInTool(cfg Config, client *client.ConfluenceClient) {
 		}
 
 	}
+	return adcount, localcount
 }
 func getUnamesInToolGroup(theClient *client.ConfluenceClient, localgroup string) map[string]adutils.ADUser {
 	groupMemberNames := make(map[string]adutils.ADUser)

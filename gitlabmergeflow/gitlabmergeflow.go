@@ -13,7 +13,6 @@ import (
 	"time"
 )
 
-// or through Decode
 type Config struct {
 	User     string `properties:"user"`
 	Pass     string `properties:"password"`
@@ -28,10 +27,10 @@ type MergConfig struct {
 }
 
 type Data struct {
-	Project string            `json:"project"`
-	Description string        `json:"description"`
-	Merges  []MergeData       `json:"mergerequests"`
-	TopList []ContributorData `json:"toplist"`
+	Project     string            `json:"project"`
+	Description string            `json:"description"`
+	Merges      []MergeData       `json:"mergerequests"`
+	TopList     []ContributorData `json:"toplist"`
 }
 
 type MergeData struct {
@@ -74,7 +73,6 @@ func GitLabMergeFlowReport(propPtr string) {
 		//config.Debug = true
 
 		confluence = client.Client(&config)
-
 	}
 
 	for _, report := range gitlabmergestatus.Reports {
@@ -119,16 +117,18 @@ func createProjectReport(confluence *client.ConfluenceClient, data Data, copt cl
 		for _, merge := range flowmerges {
 
 			fmt.Printf("Merge: %s Author: %s Upvotes: %d Downvotes: %d\n", merge.Title, merge.Author.Name, merge.Upvotes, merge.Downvotes)
-			participants, _, err := gitlabclient.MergeRequests.GetMergeRequestParticipants(cfg.GitProjId, merge.IID, nil)
+			//ListMergeRequestNotes
+			//GET /projects/:id/merge_requests/:merge_request_iid/notes
+			notes, _, err := gitlabclient.Notes.ListMergeRequestNotes(cfg.GitProjId, merge.IID, nil)
 			Utilities.Check(err)
-			for _, participant := range participants {
-				//			fmt.Printf("  participant: %s\n", participant.Name)
-				if _, ok := count[participant.Name]; !ok {
-					count[participant.Name] = 1
+			for _, note := range notes {
+				if _, ok := count[note.Author.Name]; !ok {
+					count[note.Author.Name] = 1
 				} else {
-					count[participant.Name] = count[participant.Name] + 1
+					count[note.Author.Name] = count[note.Author.Name] + 1
 				}
 			}
+
 			if cfg.CreateAttachment {
 				var i MergeData
 				i.Title = merge.Title
@@ -148,7 +148,6 @@ func createProjectReport(confluence *client.ConfluenceClient, data Data, copt cl
 				i.DownVotes = merge.Downvotes
 				data.Merges = append(data.Merges, i)
 			}
-
 		}
 		if len(flowmerges) != opt2.PerPage {
 			cont = false
@@ -186,7 +185,7 @@ func createProjectReport(confluence *client.ConfluenceClient, data Data, copt cl
 		copt.Title = cfg.PageName
 		copt.SpaceKey = "~per.olofsson@assaabloy.com"
 		err := utilities.CreateAttachmentAndUpload(data, copt, confluence, "Created by GitLab Merge Flow Report")
-		if (err!= nil) {
+		if err != nil {
 			panic(err)
 		}
 	}
