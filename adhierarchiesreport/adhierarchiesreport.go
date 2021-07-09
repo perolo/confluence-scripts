@@ -17,6 +17,7 @@ type Config struct {
 	Pass            string `properties:"password"`
 	Bindusername    string `properties:"bindusername"`
 	Bindpassword    string `properties:"bindpassword"`
+	BaseDN           string `properties:"basedn"`
 }
 
 
@@ -48,7 +49,7 @@ func CreateAdHierarchiesReport(propPtr, adgroup string, expandUsers bool) {
 	newhierarchy.Parent = ""
 	roothier = append(roothier, newhierarchy)
 
-	groups, hier, err := adutils.ExpandHierarchy(adgroup, roothier)
+	groups, hier, err := adutils.ExpandHierarchy(adgroup, roothier, cfg.BaseDN)
 	if err != nil {
 		fmt.Printf("Failed to parse AD hierarchy : %s \n", err)
 	} else {
@@ -59,7 +60,7 @@ func CreateAdHierarchiesReport(propPtr, adgroup string, expandUsers bool) {
 		copt.SpaceKey = "~per.olofsson@assaabloy.com"
 		if expandUsers {
 			for _, h := range hier {
-				users, _ := adutils.GetUnamesInGroup(h.Name)
+				users, _ := adutils.GetUnamesInGroup(h.Name, cfg.BaseDN)
 				for _, u := range users {
 					hier = append(hier,adutils.ADHierarchy{Name: u.Name, Parent: h.Name})
 				}

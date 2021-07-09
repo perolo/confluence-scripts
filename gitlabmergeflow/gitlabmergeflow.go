@@ -139,7 +139,12 @@ func createProjectReport(confluence *client.ConfluenceClient, data Data, copt cl
 				i.Start = merge.CreatedAt.Format("2006, 01, 02")
 				if merge.State == "merged" {
 					fmt.Printf("MergeStatus: %s State: %s Target: %s\n", merge.MergeStatus, merge.State, merge.TargetBranch)
-					i.End = merge.MergedAt.Format("2006, 01, 02")
+					if merge.MergedAt == nil {
+						// Why is a Merged branch without mergedate? This is a Workaround
+						i.End = time.Now().Format("2006, 01, 02")
+					} else {
+						i.End = merge.MergedAt.Format("2006, 01, 02")
+					}
 				} else {
 					fmt.Printf("MergeStatus: %s State: %s Target: %s\n", merge.MergeStatus, merge.State, merge.TargetBranch)
 					i.End = time.Now().Format("2006, 01, 02")

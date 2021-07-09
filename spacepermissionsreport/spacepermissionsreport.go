@@ -107,8 +107,8 @@ func CreateSpacePermissionsReport(cfg ReportConfig) {
 	spcont := true
 	var spaces *client.ConfluenceSpaceResult
 	for spcont {
-		spopt := client.SpaceOptions{Start: spstart, Limit: spincrease, Label: cfg.SpaceCategory, Type: "global"}
-		spaces = theClient.GetSpaces(&spopt)
+		spopt := client.SpaceOptions{Start: spstart, Limit: spincrease, Label: cfg.SpaceCategory, Type: "global", Status: "current",}
+		spaces , _ = theClient.GetSpaces(&spopt)
 		opt := client.PaginationOptions{}
 		for _, space := range spaces.Results {
 			if space.Type == "global" {
@@ -126,7 +126,8 @@ func CreateSpacePermissionsReport(cfg ReportConfig) {
 						for _, group := range groups.Groups {
 							excelutils.ResetCol()
 							excelutils.WiteCellnc(space.Name)
-							excelutils.WiteCellnc(space.Key)
+							//excelutils.WiteCellnc(space.Key)
+							excelutils.WiteCellHyperLinknc(space.Key, cfg.ConfHost + "/spaces/spacepermissions.action?key=" + space.Key) //https://confluence.assaabloy.net/spaces/spacepermissions.action?key=REL
 							excelutils.WiteCellnc("Group")
 							permissions := theClient.GetGroupPermissionsForSpace(space.Key, group)
 							excelutils.WiteCellnc(group)
@@ -166,7 +167,8 @@ func CreateSpacePermissionsReport(cfg ReportConfig) {
 						for _, user := range users.Users {
 							excelutils.ResetCol()
 							excelutils.WiteCellnc(space.Name)
-							excelutils.WiteCellnc(space.Key)
+							//excelutils.WiteCellnc(space.Key)
+							excelutils.WiteCellHyperLinknc(space.Key, cfg.ConfHost + "/spaces/spacepermissions.action?key=" + space.Key)
 							excelutils.WiteCellnc("User")
 							permissions, resp := theClient.GetUserPermissionsForSpace(space.Key, user)
 							if resp.StatusCode < 200 || resp.StatusCode > 300 {

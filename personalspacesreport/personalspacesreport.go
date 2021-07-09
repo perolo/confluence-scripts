@@ -32,6 +32,7 @@ type ReportConfig struct {
 	Report       bool   `properties:"report"`
 	Bindusername string `properties:"bindusername"`
 	Bindpassword string `properties:"bindpassword"`
+	BaseDN           string `properties:"basedn"`
 }
 
 func PersonalSpaceReport(propPtr string) {
@@ -113,7 +114,7 @@ func CreatePersonalSpacesReport(cfg ReportConfig) {
 	var spaces *client.ConfluenceSpaceResult
 	for spcont {
 		spopt := client.SpaceOptions{Start: spstart, Limit: spincrease, Type: "personal", Status: "current"}
-		spaces = theClient.GetSpaces(&spopt)
+		spaces, _ = theClient.GetSpaces(&spopt)
 		opt := client.PaginationOptions{}
 		for _, space := range spaces.Results {
 			noSpaces++
@@ -129,7 +130,7 @@ func CreatePersonalSpacesReport(cfg ReportConfig) {
 				for _, user := range users.Users {
 					permissions, _ := theClient.GetUserPermissionsForSpace(space.Key, user)
 					if Contains(permissions.Permissions, "SETPAGEPERMISSIONS") {
-						_, err := adutils.GetActiveUserDN(user)
+						_, err := adutils.GetActiveUserDN(user, cfg.BaseDN)
 						if err == nil {
 							//excelutils.WiteCellnc(dn.DN)
 							//excelutils.WiteCellnc(dn.Mail)
@@ -140,7 +141,7 @@ func CreatePersonalSpacesReport(cfg ReportConfig) {
 							excelutils.WiteCellnc(space.Key)
 							excelutils.WiteCellnc("User")
 							excelutils.WiteCellnc(user)
-							udn, err := adutils.GetAllUserDN(user)
+							udn, err := adutils.GetAllUserDN(user, cfg.BaseDN)
 							if err == nil {
 								excelutils.WiteCellnc(udn.DN)
 								excelutils.WiteCellnc(udn.Mail)
