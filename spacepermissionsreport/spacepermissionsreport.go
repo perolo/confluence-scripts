@@ -3,6 +3,7 @@ package spacepermissionsreport
 import (
 	"flag"
 	"fmt"
+	"git.aa.st/perolo/confluence-utils/Utilities/schedulerutil"
 	"github.com/magiconair/properties"
 	"github.com/perolo/confluence-prop/client"
 	"github.com/perolo/confluence-scripts/utilities"
@@ -32,6 +33,7 @@ type ReportConfig struct {
 	File          string `properties:"file"`
 	Simple        bool   `properties:"simple"`
 	Report        bool   `properties:"report"`
+	Reset            bool `properties:"reset"`
 }
 
 func SpacePermissionsReport(propPtr string) {
@@ -51,10 +53,12 @@ func SpacePermissionsReport(propPtr string) {
 	} else {
 		reportBase := cfg.File
 		for _, category := range Categories {
-			cfg.SpaceCategory = category
-			cfg.File = fmt.Sprintf(reportBase, "-"+category)
-			fmt.Printf("Category: %s \n", category)
-			CreateSpacePermissionsReport(cfg)
+			if schedulerutil.CheckScheduleDetail("SpacePermissionsReport-" + category, 7*time.Hour*24,cfg.Reset, schedulerutil.DummyFunc,"jiracategory.properties") {
+				cfg.SpaceCategory = category
+				cfg.File = fmt.Sprintf(reportBase, "-"+category)
+				fmt.Printf("Category: %s \n", category)
+				CreateSpacePermissionsReport(cfg)
+			}
 		}
 	}
 }

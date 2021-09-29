@@ -2,7 +2,7 @@ package gitlabmergeflow
 
 import (
 	"fmt"
-	"git.aa.st/perolo/confluence-utils/Utilities"
+	"git.aa.st/perolo/confluence-utils/Utilities/htmlutils"
 	"github.com/magiconair/properties"
 	"github.com/perolo/confluence-prop/client"
 	"github.com/perolo/confluence-scripts/gitlabmergestatus"
@@ -112,7 +112,7 @@ func createProjectReport(confluence *client.ConfluenceClient, data Data, copt cl
 		opt2.Page = page
 
 		flowmerges, _, err := gitlabclient.MergeRequests.ListProjectMergeRequests(cfg.GitProjId, &opt2, nil)
-		Utilities.Check(err)
+		htmlutils.Check(err)
 
 		for _, merge := range flowmerges {
 
@@ -120,7 +120,7 @@ func createProjectReport(confluence *client.ConfluenceClient, data Data, copt cl
 			//ListMergeRequestNotes
 			//GET /projects/:id/merge_requests/:merge_request_iid/notes
 			notes, _, err := gitlabclient.Notes.ListMergeRequestNotes(cfg.GitProjId, merge.IID, nil)
-			Utilities.Check(err)
+			htmlutils.Check(err)
 			for _, note := range notes {
 				if _, ok := count[note.Author.Name]; !ok {
 					count[note.Author.Name] = 1

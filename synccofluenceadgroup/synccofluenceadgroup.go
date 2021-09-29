@@ -1,4 +1,4 @@
-package syncadgroup
+package synccofluenceadgroup
 
 import (
 	"flag"
@@ -14,7 +14,6 @@ import (
 	"time"
 )
 
-// or through Decode
 type Config struct {
 	ConfHost        string `properties:"confhost"`
 	User            string `properties:"user"`
@@ -24,9 +23,11 @@ type Config struct {
 	RemoveOperation bool   `properties:"remove"`
 	Report          bool   `properties:"report"`
 	Limited         bool   `properties:"limited"`
+	AutoDisable     bool   `properties:"autodisable"`
 	AdGroup         string `properties:"adgroup"`
 	Localgroup      string `properties:"localgroup"`
 	File            string `properties:"file"`
+//	Reset            bool `properties:"reset"`
 	ConfUpload      bool   `properties:"confupload"`
 	ConfPage        string `properties:"confluencepage"`
 	ConfSpace       string `properties:"confluencespace"`
@@ -60,7 +61,7 @@ func initReport(cfg Config) {
 			excelutils.WriteColumnsln([]string{cfg.AdGroup, cfg.Localgroup, strconv.FormatBool(cfg.AddOperation), strconv.FormatBool(cfg.RemoveOperation)})
 		} else {
 			for _, syn := range GroupSyncs {
-				if (syn.InConfluence) {
+				if syn.InConfluence {
 					excelutils.WriteColumnsln([]string{syn.AdGroup, syn.LocalGroup, excelutils.BoolToEmoji(syn.DoAdd), excelutils.BoolToEmoji(syn.DoRemove)})
 				}
 			}
@@ -77,7 +78,13 @@ func initReport(cfg Config) {
 func endReport(cfg Config) error {
 	if cfg.Report {
 		file := fmt.Sprintf(cfg.File, "-Confluence")
-		excelutils.SetColWidth("A", "A", 60)
+		excelutils.SetColWidth("A", "A", 50)
+		excelutils.SetColWidth("B", "B", 30)
+		excelutils.SetColWidth("C", "D", 20)
+		excelutils.SetColWidth("E", "E", 10)
+		excelutils.SetColWidth("F", "F", 20)
+		excelutils.SetColWidth("G", "G", 30)
+		excelutils.SetColWidth("H", "H", 80)
 		excelutils.AutoFilterEnd()
 		excelutils.SaveAs(file)
 		if cfg.ConfUpload {
@@ -116,23 +123,30 @@ func ConfluenceSyncAdGroup(propPtr string) {
 		SyncGroupInTool(cfg, toolClient)
 	} else {
 		for _, syn := range GroupSyncs {
-			syn.AdCount = 0
-			syn.GroupCount = 0
-			if !syn.InJira && !syn.InConfluence {
-				log.Fatal("Error in setup")
+
+				adCount := 0
+				groupCount := 0
+				if !syn.InJira && !syn.InConfluence {
+					log.Fatal("Error in setup")
+				}
+				if syn.InConfluence {
+					cfg.AdGroup = syn.AdGroup
+					cfg.Localgroup = syn.LocalGroup
+					cfg.AddOperation = syn.DoAdd
+					cfg.RemoveOperation = syn.DoRemove
+					cfg.AutoDisable = syn.AutoDisable
+					adCount, groupCount = SyncGroupInTool(cfg, toolClient)
+					// Dirty Solution - find a better?
+					excelutils.SetCell(fmt.Sprintf("%v", adCount), 5, x)
+					excelutils.SetCell(fmt.Sprintf("%v", groupCount), 6, x)
+/*					if adCount == groupCount {
+						excelutils.SetCellStyleColor("green")
+					} else {
+
+					}*/
+					x = x + 1
+				}
 			}
-			if syn.InConfluence {
-				cfg.AdGroup = syn.AdGroup
-				cfg.Localgroup = syn.LocalGroup
-				cfg.AddOperation = syn.DoAdd
-				cfg.RemoveOperation = syn.DoRemove
-				syn.AdCount, syn.GroupCount = SyncGroupInTool(cfg, toolClient)
-				// Dirty Solution - find a better?
-				excelutils.SetCell(fmt.Sprintf("%v", syn.AdCount), 5, x)
-				excelutils.SetCell(fmt.Sprintf("%v", syn.GroupCount), 6, x)
-				x = x+1
-			}
-		}
 	}
 	err := endReport(cfg)
 	if err != nil {
@@ -152,6 +166,7 @@ func toollogin(cfg Config) *client.ConfluenceClient {
 
 func SyncGroupInTool(cfg Config, client *client.ConfluenceClient) (adcount int,  localcount int){
 	var toolGroupMemberNames map[string]adutils.ADUser
+	deactCounter:=0
 	fmt.Printf("\n")
 	fmt.Printf("SyncGroup AdGroup: %s LocalGroup: %s \n", cfg.AdGroup, cfg.Localgroup)
 	fmt.Printf("\n")
@@ -159,6 +174,9 @@ func SyncGroupInTool(cfg Config, client *client.ConfluenceClient) (adcount int, 
 	if cfg.AdGroup != "" {
 		adUnames, _ = adutils.GetUnamesInGroup(cfg.AdGroup, cfg.BaseDN)
 		fmt.Printf("adUnames(%v)\n", len(adUnames))
+		if len(adUnames) == 0 {
+			fmt.Printf("Warning empty AD group! adUnames(%v)\n", len(adUnames))
+		}
 	}
 	if cfg.Report {
 		if !cfg.Limited {
@@ -224,8 +242,21 @@ func SyncGroupInTool(cfg Config, client *client.ConfluenceClient) (adcount int, 
 							nad.Mail = udn.Mail
 							nad.Name = udn.Name
 							nad.Err = "Deactivated"
+							// Avoid being kicked out
+							deactCounter++
+							if deactCounter > 10 {
+								_, errn := adutils.GetAllUserDN("perolo",cfg.BaseDN)
+								if errn != nil {
+									fmt.Printf("Error: finding %s \n", "perolo")
+									panic(errn)
+								}
+								deactCounter = 0
+							}
+							if cfg.AutoDisable == true {
+								TryDeactivateUserConfluence(client, nad.Uname)
+							}
 						} else {
-							edn, err := adutils.GetAllEmailDN(nad.Mail,cfg.BaseDN)
+							edn, err := adutils.GetAllEmailDN(nad.Mail, cfg.BaseDN)
 							if err == nil {
 								nad.DN = edn[0].DN
 								nad.Mail = edn[0].Mail
@@ -280,23 +311,40 @@ func SyncGroupInTool(cfg Config, client *client.ConfluenceClient) (adcount int, 
 	}
 	return adcount, localcount
 }
+
+func TryDeactivateUserConfluence(client *client.ConfluenceClient, deactuser string) {
+	deactUser, resp := client.GetUserDetails(deactuser)
+	if resp.StatusCode == 200 {
+		if deactUser.HasAccessToUseConfluence == true {
+			mess, resp2 := client.DeactivateUser(deactuser)
+			fmt.Printf("User: %s Deactivated, message: %s response: %v \n", deactuser, mess, resp2.StatusCode)
+		} else {
+			fmt.Printf("User: %s, Already Deactivated \n", deactuser)
+		}
+	} else {
+		fmt.Printf("Error: \n")
+		panic(nil)
+	}
+}
 func getUnamesInToolGroup(theClient *client.ConfluenceClient, localgroup string) map[string]adutils.ADUser {
 	groupMemberNames := make(map[string]adutils.ADUser)
 	cont := true
 	start := 0
 	max := 50
 	for cont {
-		groupMembers, err := theClient.GetGroupMembers(localgroup, &client.GetGroupMembersOptions{StartAt: start, MaxResults: max, ShowBasicDetails: true})
+		groupMembers, err := theClient.GetGroupMembers(localgroup, &client.GetGroupMembersOptions{StartAt: start, MaxResults: max, ShowExtendedDetails: true})
 		if err != nil {
 			panic(err)
 		}
 		for _, member := range groupMembers.Users {
 			if _, ok := groupMemberNames[member.Name]; !ok {
-				var newUser adutils.ADUser
-				newUser.Uname = member.Name
-				newUser.Name = member.FullName
-				newUser.Mail = member.Email
-				groupMemberNames[member.Name] = newUser
+				if member.HasAccessToUseConfluence == true {
+					var newUser adutils.ADUser
+					newUser.Uname = member.Name
+					newUser.Name = member.FullName
+					newUser.Mail = member.Email
+					groupMemberNames[member.Name] = newUser
+				}
 			}
 		}
 		if len(groupMembers.Users) != max {

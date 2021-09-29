@@ -21,7 +21,6 @@ type Config struct {
 }
 
 
-//func main() {
 func CreateAdHierarchiesReport(propPtr, adgroup string, expandUsers bool) {
 	var copt client.OperationOptions
 	var confluence *client.ConfluenceClient

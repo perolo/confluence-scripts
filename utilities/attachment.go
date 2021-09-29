@@ -3,7 +3,7 @@ package utilities
 import (
 	"encoding/json"
 	"fmt"
-	"git.aa.st/perolo/confluence-utils/Utilities"
+	"git.aa.st/perolo/confluence-utils/Utilities/htmlutils"
 	"github.com/kennygrant/sanitize"
 	"github.com/perolo/confluence-prop/client"
 	"io/ioutil"
@@ -48,10 +48,10 @@ func CheckPageExists(copt client.OperationOptions, confluence *client.Confluence
 		copt.Filepath = f.Name()
 		copt.BodyOnly = true
 
-		Utilities.WriteHeader2(f, "Introduction")
-		Utilities.WriteParagraf(f, "Please Do not edit this page!")
-		Utilities.WriteParagraf(f, "This page is created by the Ad User Report script: "+Utilities.WrapLink("https://github.com/perolo/confluence-scripts", "confluence-utils"))
-		Utilities.WriteParagraf(f, "The report is uploaded as attachment to this page")
+		htmlutils.WriteHeader2(f, "Introduction")
+		htmlutils.WriteParagraf(f, "Please Do not edit this page!")
+		htmlutils.WriteParagraf(f, "This page is created by the Ad User Report script: "+htmlutils.WrapLink("https://github.com/perolo/confluence-scripts", "confluence-utils"))
+		htmlutils.WriteParagraf(f, "The report is uploaded as attachment to this page")
 
 		confluence.AddPage(copt.Title, copt.SpaceKey, copt.Filepath, true, false, 0)
 
@@ -73,11 +73,11 @@ func CreateAttachmentAndUpload(data interface{}, copt client.OperationOptions, c
 	attname := sanitize.BaseName(copt.Title) + ".json"
 	ff, err := ioutil.TempFile(os.TempDir(), attname)
 	//ff, err := os.Create("C://temp/" + attname)
-	Utilities.Check(err)
+	htmlutils.Check(err)
 	_, err = ff.Write(buf)
-	Utilities.Check(err)
+	htmlutils.Check(err)
 	err = ff.Close()
-	Utilities.Check(err)
+	htmlutils.Check(err)
 
 	return AddAttachmentAndUpload(confluence, copt, attname, ff.Name(), comment)
 }
