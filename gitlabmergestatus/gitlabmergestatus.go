@@ -2,11 +2,11 @@ package gitlabmergestatus
 
 import (
 	"fmt"
-	"git.aa.st/perolo/confluence-utils/Utilities/htmlutils"
 	"github.com/magiconair/properties"
 	"github.com/perolo/confluence-prop/client"
 	"github.com/perolo/confluence-scripts/utilities"
-	excelutils "github.com/perolo/excel-utils"
+	"github.com/perolo/excel-utils"
+	"github.com/perolo/jira-scripts/jirautils"
 	"github.com/xanzy/go-gitlab"
 	"log"
 	"sort"
@@ -114,7 +114,7 @@ func createProjectReport(confluence *client.ConfluenceClient, data Data, copt cl
 			fmt.Printf("Merge: %s Author: %s Upvotes: %d Downvotes: %d\n", merge.Title, merge.Author.Name, merge.Upvotes, merge.Downvotes)
 
 			notes, _, err := gitlabclient.Notes.ListMergeRequestNotes(cfg.GitProjId, merge.IID, nil)
-			htmlutils.Check(err)
+			jirautils.Check(err)
 			for _, note := range notes {
 				if _, ok := count[note.Author.Name]; !ok {
 					count[note.Author.Name] = 1

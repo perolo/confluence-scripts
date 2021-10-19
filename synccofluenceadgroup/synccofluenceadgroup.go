@@ -7,7 +7,7 @@ import (
 	"github.com/perolo/ad-utils"
 	"github.com/perolo/confluence-prop/client"
 	"github.com/perolo/confluence-scripts/utilities"
-	excelutils "github.com/perolo/excel-utils"
+	"github.com/perolo/excel-utils"
 	"log"
 	"path/filepath"
 	"strconv"
@@ -78,13 +78,8 @@ func initReport(cfg Config) {
 func endReport(cfg Config) error {
 	if cfg.Report {
 		file := fmt.Sprintf(cfg.File, "-Confluence")
+		excelutils.SetAutoColWidth()
 		excelutils.SetColWidth("A", "A", 50)
-		excelutils.SetColWidth("B", "B", 30)
-		excelutils.SetColWidth("C", "D", 20)
-		excelutils.SetColWidth("E", "E", 10)
-		excelutils.SetColWidth("F", "F", 20)
-		excelutils.SetColWidth("G", "G", 30)
-		excelutils.SetColWidth("H", "H", 80)
 		excelutils.AutoFilterEnd()
 		excelutils.SaveAs(file)
 		if cfg.ConfUpload {
@@ -168,7 +163,7 @@ func SyncGroupInTool(cfg Config, client *client.ConfluenceClient) (adcount int, 
 	var toolGroupMemberNames map[string]adutils.ADUser
 	deactCounter:=0
 	fmt.Printf("\n")
-	fmt.Printf("SyncGroup AdGroup: %s LocalGroup: %s \n", cfg.AdGroup, cfg.Localgroup)
+	fmt.Printf("SyncGroup Confluence AdGroup: %s LocalGroup: %s \n", cfg.AdGroup, cfg.Localgroup)
 	fmt.Printf("\n")
 	var adUnames []adutils.ADUser
 	if cfg.AdGroup != "" {
@@ -176,6 +171,7 @@ func SyncGroupInTool(cfg Config, client *client.ConfluenceClient) (adcount int, 
 		fmt.Printf("adUnames(%v)\n", len(adUnames))
 		if len(adUnames) == 0 {
 			fmt.Printf("Warning empty AD group! adUnames(%v)\n", len(adUnames))
+			panic(nil)
 		}
 	}
 	if cfg.Report {

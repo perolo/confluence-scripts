@@ -6,6 +6,7 @@ import (
 	"git.aa.st/perolo/confluence-utils/Utilities/htmlutils"
 	"github.com/kennygrant/sanitize"
 	"github.com/perolo/confluence-prop/client"
+	"github.com/perolo/jira-scripts/jirautils"
 	"io/ioutil"
 	"log"
 	"net/url"
@@ -39,6 +40,7 @@ func CheckPageExists(copt client.OperationOptions, confluence *client.Confluence
 		}
 
 		defer f.Close()
+
 		//	defer os.Remove(f.Name())
 //		var copt client.OperationOptions
 
@@ -73,11 +75,11 @@ func CreateAttachmentAndUpload(data interface{}, copt client.OperationOptions, c
 	attname := sanitize.BaseName(copt.Title) + ".json"
 	ff, err := ioutil.TempFile(os.TempDir(), attname)
 	//ff, err := os.Create("C://temp/" + attname)
-	htmlutils.Check(err)
+	jirautils.Check(err)
 	_, err = ff.Write(buf)
-	htmlutils.Check(err)
+	jirautils.Check(err)
 	err = ff.Close()
-	htmlutils.Check(err)
+	jirautils.Check(err)
 
 	return AddAttachmentAndUpload(confluence, copt, attname, ff.Name(), comment)
 }

@@ -10,7 +10,6 @@ import (
 	"log"
 )
 
-// or through Decode
 type Config struct {
 	ConfHost        string `properties:"confhost"`
 	User            string `properties:"user"`
@@ -25,7 +24,6 @@ func CreateAdHierarchiesReport(propPtr, adgroup string, expandUsers bool) {
 	var copt client.OperationOptions
 	var confluence *client.ConfluenceClient
 
-//	propPtr := flag.String("prop", "confluence.properties", "a string")
 	flag.Parse()
 	p := properties.MustLoadFile(propPtr, properties.ISO_8859_1)
 	var cfg Config
@@ -36,12 +34,10 @@ func CreateAdHierarchiesReport(propPtr, adgroup string, expandUsers bool) {
 	config.Username = cfg.User
 	config.Password = cfg.Pass
 	config.URL = cfg.ConfHost
-	//config.Debug = true
 
 	confluence = client.Client(&config)
 
 	adutils.InitAD(cfg.Bindusername, cfg.Bindpassword)
-	//cfg.AdGroup = "#AAAB - Group Technology Team"
 	var roothier [] adutils.ADHierarchy
 	var newhierarchy adutils.ADHierarchy
 	newhierarchy.Name = adgroup
@@ -69,7 +65,7 @@ func CreateAdHierarchiesReport(propPtr, adgroup string, expandUsers bool) {
 
 		utilities.CheckPageExists(copt, confluence)
 		err = utilities.CreateAttachmentAndUpload(hier, copt, confluence, "Created by AD Hierarchies Report")
-		if (err!= nil) {
+		if err!= nil {
 			panic(err)
 		}
 

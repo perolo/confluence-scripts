@@ -7,13 +7,11 @@ import (
 	"log"
 )
 
-// or through Decode
 type Config struct {
 	Host     string `properties:"host"`
 	User     string `properties:"user"`
 	Pass     string `properties:"password"`
 }
-
 
 var sonarClient *sonarclient.SonarQubeClient
 

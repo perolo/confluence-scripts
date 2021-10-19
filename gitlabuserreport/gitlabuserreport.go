@@ -7,7 +7,6 @@ import (
 	"log"
 )
 
-// or through Decode
 type Config struct {
 	GitLabHost  string `properties:"gitlabhost"`
 	GitLabtoken string `properties:"gitlabtoken"`

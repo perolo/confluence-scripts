@@ -7,7 +7,6 @@ import (
 	"log"
 )
 
-// or through Decode
 type Config struct {
 	ConfHost    string `properties:"confhost"`
 	User        string `properties:"user"`
@@ -42,7 +41,7 @@ func RemoveSpaceCategory(propPtr string) {
 	cont := true
 	for cont {
 		opt := client.SpaceOptions{Start: start, Limit: increase, Label: cfg.SearchLabel}
-		spaces := conf.GetSpaces(&opt)
+		spaces, _ := conf.GetSpaces(&opt)
 		for _, space := range spaces.Results {
 			found := false
 			id := 0

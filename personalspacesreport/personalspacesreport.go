@@ -4,7 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"github.com/magiconair/properties"
-	adutils "github.com/perolo/ad-utils"
+	"github.com/perolo/ad-utils"
 	"github.com/perolo/confluence-prop/client"
 	"github.com/perolo/confluence-scripts/utilities"
 	"github.com/perolo/excel-utils"
@@ -168,15 +168,10 @@ func CreatePersonalSpacesReport(cfg ReportConfig) {
 			spstart = spstart + spincrease
 		}
 	}
+	excelutils.SetAutoColWidth()
 	excelutils.AutoFilterEnd()
 
 	excelutils.SetColWidth("A", "A", 60)
-	excelutils.SetColWidth("B", "B", 40)
-	excelutils.SetColWidth("C", "C", 20)
-	excelutils.SetColWidth("D", "D", 40)
-	excelutils.SetColWidth("E", "E", 100)
-	excelutils.SetColWidth("F", "F", 60)
-	excelutils.SetColWidth("G", "G", 40)
 	// Save xlsx file by the given path.
 	excelutils.SaveAs(cfg.File)
 	if cfg.Report {

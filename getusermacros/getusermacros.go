@@ -10,7 +10,6 @@ import (
 	"os"
 )
 
-// or through Decode
 type Config struct {
 	User     string `properties:"user"`
 	Pass     string `properties:"password"`

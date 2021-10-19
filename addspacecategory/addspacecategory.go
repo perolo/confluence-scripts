@@ -7,7 +7,6 @@ import (
 	"log"
 )
 
-// or through Decode
 type Config struct {
 	ConfHost    string `properties:"confhost"`
 	User        string `properties:"user"`
@@ -43,7 +42,7 @@ func AddSpaceCategory(propPtr string) {
 	cont := true
 	for cont {
 		opt := client.SpaceOptions{Start: start, Limit: increase, Label: cfg.SearchLabel}
-		spaces := conf.GetSpaces(&opt)
+		spaces, _ := conf.GetSpaces(&opt)
 		for _, space := range spaces.Results {
 			fmt.Printf("Add Label: %s to Space: %s \n", cfg.AddLabel, space.Name)
 			conf.AddSpaceCategory(space.Key, cfg.AddLabel)

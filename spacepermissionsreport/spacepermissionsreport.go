@@ -3,9 +3,9 @@ package spacepermissionsreport
 import (
 	"flag"
 	"fmt"
-	"git.aa.st/perolo/confluence-utils/Utilities/schedulerutil"
 	"github.com/magiconair/properties"
 	"github.com/perolo/confluence-prop/client"
+	"github.com/perolo/confluence-scripts/schedulerutil"
 	"github.com/perolo/confluence-scripts/utilities"
 	"github.com/perolo/excel-utils"
 	"log"
@@ -206,11 +206,10 @@ func CreateSpacePermissionsReport(cfg ReportConfig) {
 			spstart = spstart + spincrease
 		}
 	}
+	excelutils.SetAutoColWidth()
 	excelutils.AutoFilterEnd()
 
 	excelutils.SetColWidth("A", "A", 40)
-	excelutils.SetColWidth("B", "D", 30)
-	excelutils.SetColWidth("E", "R", 5)
 	// Save xlsx file by the given path.
 	excelutils.SaveAs(cfg.File)
 	if cfg.Report {
