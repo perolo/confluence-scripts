@@ -1,5 +1,5 @@
 # confluence-scripts
-Handy utilities for administration and maintennance of Confluence
+Handy utilities for administration and maintenance of Confluence
 The use of properties files is to enable automation with CI tool without "logging" passwords.
 
 ## Clone Group Permissions

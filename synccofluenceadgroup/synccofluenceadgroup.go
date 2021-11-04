@@ -312,8 +312,12 @@ func TryDeactivateUserConfluence(client *client.ConfluenceClient, deactuser stri
 	deactUser, resp := client.GetUserDetails(deactuser)
 	if resp.StatusCode == 200 {
 		if deactUser.HasAccessToUseConfluence == true {
+			fmt.Printf("Deactivating User: %s  \n", deactuser)
 			mess, resp2 := client.DeactivateUser(deactuser)
-			fmt.Printf("User: %s Deactivated, message: %s response: %v \n", deactuser, mess, resp2.StatusCode)
+			fmt.Printf("User: %s Deactivated, message: %s response: %v \n", deactuser, mess.Message, resp2.StatusCode)
+			if resp2.StatusCode != 200 {
+				fmt.Printf("User: %s Deactivated, message: %s response: %v \n", deactuser, mess.Message, resp2.StatusCode)
+			}
 		} else {
 			fmt.Printf("User: %s, Already Deactivated \n", deactuser)
 		}
