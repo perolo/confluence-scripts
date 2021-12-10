@@ -8,9 +8,6 @@ import (
 )
 
 type Config struct {
-	Host     string `properties:"host"`
-	User     string `properties:"user"`
-	Pass     string `properties:"password"`
 }
 
 var sonarClient *sonarclient.SonarQubeClient
@@ -30,6 +27,7 @@ func Sonarqubeuserreport(propPtr string) {
 	var sonaConfig = sonarclient.SonarQubeConfig{}
 	sonaConfig.Username = cfg.User
 	sonaConfig.Password = cfg.Pass
+	config.UseToken = cfg.UseToken
 	sonaConfig.URL = cfg.Host
 	//config.Debug = true
 

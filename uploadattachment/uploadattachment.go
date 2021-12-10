@@ -3,17 +3,15 @@ package main
 import (
 	"flag"
 	"fmt"
-	"os"
 	"github.com/magiconair/properties"
 	"github.com/perolo/confluence-prop/client"
 	"github.com/perolo/confluence-scripts/utilities"
 	"log"
+	"os"
 )
 
 type Config struct {
 	ConfHost    string `properties:"confhost"`
-	User        string `properties:"user"`
-	Pass        string `properties:"password"`
 	File        string `properties:"file"`
 	ConfPage    string `properties:"confluencepage"`
 	ConfSpace   string `properties:"confluencespace"`
@@ -34,6 +32,7 @@ func main() {
 	var config = client.ConfluenceConfig{}
 	config.Username = cfg.User
 	config.Password = cfg.Pass
+	config.UseToken = cfg.UseToken
 	config.URL = cfg.ConfHost
 	config.Debug = false
 

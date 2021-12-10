@@ -11,19 +11,17 @@ import (
 )
 
 type Config struct {
-	User     string `properties:"user"`
-	Pass     string `properties:"password"`
-	ConfHost string `properties:"confhost"`
+	ConfHost  string `properties:"confhost"`
 	MacroPath string `properties:"macropath"`
 }
 
 var cfg Config
+
 func Check(e error) {
 	if e != nil {
 		panic(e)
 	}
 }
-
 
 func getMacro(confluenceClient *client.ConfluenceClient, key string) (bool, string) {
 
@@ -40,7 +38,6 @@ func getMacro(confluenceClient *client.ConfluenceClient, key string) (bool, stri
 
 func main() {
 
-
 	propPtr := flag.String("prop", "jiracategory.properties", "a string")
 
 	flag.Parse()
@@ -56,6 +53,7 @@ func main() {
 	var config = client.ConfluenceConfig{}
 	config.Username = cfg.User
 	config.Password = cfg.Pass
+	config.UseToken = cfg.UseToken
 	config.URL = cfg.ConfHost
 	//config.Debug = true
 
@@ -65,7 +63,7 @@ func main() {
 		ok, text := getMacro(confluence, macro)
 		if ok {
 			fmt.Printf("Saving : %s\n", macro)
-			f, err := os.Create( cfg.MacroPath+ macro + ".html")
+			f, err := os.Create(cfg.MacroPath + macro + ".html")
 			Check(err)
 			_, err = f.Write([]byte(text))
 			Check(err)

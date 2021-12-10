@@ -25,14 +25,16 @@ func Contains(a []string, x string) bool {
 
 type ReportConfig struct {
 	ConfHost     string `properties:"confhost"`
-	User         string `properties:"user"`
-	Pass         string `properties:"password"`
+	ConfUser     string `properties:"confuser"`
+	ConfPass     string `properties:"confpass"`
+	ConfToken    string `properties:"conftoken"`
+	UseToken     bool   `properties:"usetoken"`
 	File         string `properties:"file"`
 	Simple       bool   `properties:"simple"`
 	Report       bool   `properties:"report"`
 	Bindusername string `properties:"bindusername"`
 	Bindpassword string `properties:"bindpassword"`
-	BaseDN           string `properties:"basedn"`
+	BaseDN       string `properties:"basedn"`
 }
 
 func PersonalSpaceReport(propPtr string) {
@@ -46,6 +48,11 @@ func PersonalSpaceReport(propPtr string) {
 	if err := p.Decode(&cfg); err != nil {
 		log.Fatal(err)
 	}
+	if cfg.UseToken {
+		cfg.ConfPass = cfg.ConfToken
+	} else {
+	}
+
 	adutils.InitAD(cfg.Bindusername, cfg.Bindpassword)
 	if cfg.Simple {
 		cfg.File = fmt.Sprintf(cfg.File, "-"+"PersonalSpaces")
@@ -68,12 +75,13 @@ func CreatePersonalSpacesReport(cfg ReportConfig) {
 	excelutils.WiteCellln("Please Do not edit this page!")
 	excelutils.WiteCellln("This page is created by the User Report script: " + "https://git.aa.st/perolo/confluence-scripts" + "/" + "PersonalSpacesReport")
 	t := time.Now()
-	excelutils.WiteCellln("Created by: " + cfg.User + " : " + t.Format(time.RFC3339))
+	excelutils.WiteCellln("Created by: " + cfg.ConfUser + " : " + t.Format(time.RFC3339))
 	excelutils.WiteCellln("")
 
 	var config = client.ConfluenceConfig{}
-	config.Username = cfg.User
-	config.Password = cfg.Pass
+	config.Username = cfg.ConfUser
+	config.Password = cfg.ConfPass
+	config.UseToken = cfg.UseToken
 	config.URL = cfg.ConfHost
 	config.Debug = false
 
@@ -177,8 +185,9 @@ func CreatePersonalSpacesReport(cfg ReportConfig) {
 	if cfg.Report {
 		var config = client.ConfluenceConfig{}
 		var copt client.OperationOptions
-		config.Username = cfg.User
-		config.Password = cfg.Pass
+		config.Username = cfg.ConfUser
+		config.Password = cfg.ConfPass
+		config.UseToken = cfg.UseToken
 		config.URL = cfg.ConfHost
 		config.Debug = false
 		confluenceClient := client.Client(&config)

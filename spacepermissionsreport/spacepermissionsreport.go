@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/magiconair/properties"
 	"github.com/perolo/confluence-prop/client"
-	"github.com/perolo/confluence-scripts/schedulerutil"
 	"github.com/perolo/confluence-scripts/utilities"
 	"github.com/perolo/excel-utils"
 	"log"
@@ -25,15 +24,16 @@ func Contains(a []string, x string) bool {
 
 type ReportConfig struct {
 	ConfHost      string `properties:"confhost"`
-	User          string `properties:"user"`
-	Pass          string `properties:"password"`
+	ConfUser      string `properties:"confuser"`
+	ConfPass      string `properties:"confpass"`
+	UseToken      bool   `properties:"usetoken"`
 	Groups        bool   `properties:"groups"`
 	Users         bool   `properties:"users"`
 	SpaceCategory string `properties:"spacecategory"`
 	File          string `properties:"file"`
 	Simple        bool   `properties:"simple"`
 	Report        bool   `properties:"report"`
-	Reset            bool `properties:"reset"`
+	Reset         bool   `properties:"reset"`
 }
 
 func SpacePermissionsReport(propPtr string) {
@@ -53,12 +53,12 @@ func SpacePermissionsReport(propPtr string) {
 	} else {
 		reportBase := cfg.File
 		for _, category := range Categories {
-			if schedulerutil.CheckScheduleDetail("SpacePermissionsReport-" + category, 7*time.Hour*24,cfg.Reset, schedulerutil.DummyFunc,"jiracategory.properties") {
-				cfg.SpaceCategory = category
-				cfg.File = fmt.Sprintf(reportBase, "-"+category)
-				fmt.Printf("Category: %s \n", category)
-				CreateSpacePermissionsReport(cfg)
-			}
+			//			if schedulerutil.CheckScheduleDetail("SpacePermissionsReport-" + category, 7*time.Hour*24,cfg.Reset, schedulerutil.DummyFunc,"jiracategory.properties") {
+			cfg.SpaceCategory = category
+			cfg.File = fmt.Sprintf(reportBase, "-"+category)
+			fmt.Printf("Category: %s \n", category)
+			CreateSpacePermissionsReport(cfg)
+			//			}
 		}
 	}
 }
@@ -72,12 +72,13 @@ func CreateSpacePermissionsReport(cfg ReportConfig) {
 	excelutils.WiteCellln("Please Do not edit this page!")
 	excelutils.WiteCellln("This page is created by the User Report script: " + "https://git.aa.st/perolo/confluence-scripts" + "/" + "SpacePermissionsReport")
 	t := time.Now()
-	excelutils.WiteCellln("Created by: " + cfg.User + " : " + t.Format(time.RFC3339))
+	excelutils.WiteCellln("Created by: " + cfg.ConfUser + " : " + t.Format(time.RFC3339))
 	excelutils.WiteCellln("")
 
 	var config = client.ConfluenceConfig{}
-	config.Username = cfg.User
-	config.Password = cfg.Pass
+	config.Username = cfg.ConfUser
+	config.Password = cfg.ConfPass
+	config.UseToken = cfg.UseToken
 	config.URL = cfg.ConfHost
 	config.Debug = false
 
@@ -111,8 +112,8 @@ func CreateSpacePermissionsReport(cfg ReportConfig) {
 	spcont := true
 	var spaces *client.ConfluenceSpaceResult
 	for spcont {
-		spopt := client.SpaceOptions{Start: spstart, Limit: spincrease, Label: cfg.SpaceCategory, Type: "global", Status: "current",}
-		spaces , _ = theClient.GetSpaces(&spopt)
+		spopt := client.SpaceOptions{Start: spstart, Limit: spincrease, Label: cfg.SpaceCategory, Type: "global", Status: "current"}
+		spaces, _ = theClient.GetSpaces(&spopt)
 		opt := client.PaginationOptions{}
 		for _, space := range spaces.Results {
 			if space.Type == "global" {
@@ -131,7 +132,7 @@ func CreateSpacePermissionsReport(cfg ReportConfig) {
 							excelutils.ResetCol()
 							excelutils.WiteCellnc(space.Name)
 							//excelutils.WiteCellnc(space.Key)
-							excelutils.WiteCellHyperLinknc(space.Key, cfg.ConfHost + "/spaces/spacepermissions.action?key=" + space.Key) //https://confluence.assaabloy.net/spaces/spacepermissions.action?key=REL
+							excelutils.WiteCellHyperLinknc(space.Key, cfg.ConfHost+"/spaces/spacepermissions.action?key="+space.Key) //https://confluence.assaabloy.net/spaces/spacepermissions.action?key=REL
 							excelutils.WiteCellnc("Group")
 							permissions := theClient.GetGroupPermissionsForSpace(space.Key, group)
 							excelutils.WiteCellnc(group)
@@ -172,7 +173,7 @@ func CreateSpacePermissionsReport(cfg ReportConfig) {
 							excelutils.ResetCol()
 							excelutils.WiteCellnc(space.Name)
 							//excelutils.WiteCellnc(space.Key)
-							excelutils.WiteCellHyperLinknc(space.Key, cfg.ConfHost + "/spaces/spacepermissions.action?key=" + space.Key)
+							excelutils.WiteCellHyperLinknc(space.Key, cfg.ConfHost+"/spaces/spacepermissions.action?key="+space.Key)
 							excelutils.WiteCellnc("User")
 							permissions, resp := theClient.GetUserPermissionsForSpace(space.Key, user)
 							if resp.StatusCode < 200 || resp.StatusCode > 300 {
@@ -215,8 +216,9 @@ func CreateSpacePermissionsReport(cfg ReportConfig) {
 	if cfg.Report {
 		var config = client.ConfluenceConfig{}
 		var copt client.OperationOptions
-		config.Username = cfg.User
-		config.Password = cfg.Pass
+		config.Username = cfg.ConfUser
+		config.Password = cfg.ConfPass
+		config.UseToken = cfg.UseToken
 		config.URL = cfg.ConfHost
 		config.Debug = false
 		confluenceClient := client.Client(&config)
@@ -225,10 +227,9 @@ func CreateSpacePermissionsReport(cfg ReportConfig) {
 		copt.SpaceKey = "AAAD"
 		_, name := filepath.Split(cfg.File)
 		err := utilities.AddAttachmentAndUpload(confluenceClient, copt, name, cfg.File, "Created by Space Permissions Report")
-		if err!= nil {
+		if err != nil {
 			panic(err)
 		}
-
 
 	}
 }

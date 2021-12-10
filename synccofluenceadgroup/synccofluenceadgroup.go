@@ -1,6 +1,7 @@
 package synccofluenceadgroup
 
 import (
+	"bufio"
 	"flag"
 	"fmt"
 	"github.com/magiconair/properties"
@@ -9,15 +10,19 @@ import (
 	"github.com/perolo/confluence-scripts/utilities"
 	"github.com/perolo/excel-utils"
 	"log"
+	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"time"
 )
 
 type Config struct {
 	ConfHost        string `properties:"confhost"`
-	User            string `properties:"user"`
-	Pass            string `properties:"password"`
+	ConfUser        string `properties:"confuser"`
+	ConfPass        string `properties:"confpass"`
+	ConfToken       string `properties:"conftoken"`
+	UseToken        bool   `properties:"usetoken"`
 	Simple          bool   `properties:"simple"`
 	AddOperation    bool   `properties:"add"`
 	RemoveOperation bool   `properties:"remove"`
@@ -27,14 +32,13 @@ type Config struct {
 	AdGroup         string `properties:"adgroup"`
 	Localgroup      string `properties:"localgroup"`
 	File            string `properties:"file"`
-//	Reset            bool `properties:"reset"`
 	ConfUpload      bool   `properties:"confupload"`
 	ConfPage        string `properties:"confluencepage"`
 	ConfSpace       string `properties:"confluencespace"`
 	ConfAttName     string `properties:"conlfuenceattachment"`
 	Bindusername    string `properties:"bindusername"`
 	Bindpassword    string `properties:"bindpassword"`
-	BaseDN           string `properties:"basedn"`
+	BaseDN          string `properties:"basedn"`
 }
 
 func initReport(cfg Config) {
@@ -45,7 +49,7 @@ func initReport(cfg Config) {
 		excelutils.WiteCellln("Please Do not edit this page!")
 		excelutils.WiteCellln("This page is created by the projectreport script: github.com\\perolo\\confluence-scripts\\SyncADGroup")
 		t := time.Now()
-		excelutils.WiteCellln("Created by: " + cfg.User + " : " + t.Format(time.RFC3339))
+		excelutils.WiteCellln("Created by: " + cfg.ConfUser + " : " + t.Format(time.RFC3339))
 		excelutils.WiteCellln("")
 		excelutils.WiteCellln("The Report Function shows:")
 		excelutils.WiteCellln("   AdNames - Name and user found in AD Group")
@@ -85,8 +89,9 @@ func endReport(cfg Config) error {
 		if cfg.ConfUpload {
 			var config = client.ConfluenceConfig{}
 			var copt client.OperationOptions
-			config.Username = cfg.User
-			config.Password = cfg.Pass
+			config.Username = cfg.ConfUser
+			config.Password = cfg.ConfPass
+			config.UseToken = cfg.UseToken
 			config.URL = cfg.ConfHost
 			config.Debug = false
 			confluenceClient := client.Client(&config)
@@ -110,6 +115,14 @@ func ConfluenceSyncAdGroup(propPtr string) {
 	if err := p.Decode(&cfg); err != nil {
 		log.Fatal(err)
 	}
+	// Temporary workaround solution - need to find better?
+	if cfg.UseToken {
+		cfg.ConfUser = cfg.ConfUser
+		cfg.ConfPass = cfg.ConfToken
+	} else {
+		cfg.ConfUser = cfg.ConfUser
+	}
+
 	toolClient := toollogin(cfg)
 	initReport(cfg)
 	adutils.InitAD(cfg.Bindusername, cfg.Bindpassword)
@@ -119,29 +132,29 @@ func ConfluenceSyncAdGroup(propPtr string) {
 	} else {
 		for _, syn := range GroupSyncs {
 
-				adCount := 0
-				groupCount := 0
-				if !syn.InJira && !syn.InConfluence {
-					log.Fatal("Error in setup")
-				}
-				if syn.InConfluence {
-					cfg.AdGroup = syn.AdGroup
-					cfg.Localgroup = syn.LocalGroup
-					cfg.AddOperation = syn.DoAdd
-					cfg.RemoveOperation = syn.DoRemove
-					cfg.AutoDisable = syn.AutoDisable
-					adCount, groupCount = SyncGroupInTool(cfg, toolClient)
-					// Dirty Solution - find a better?
-					excelutils.SetCell(fmt.Sprintf("%v", adCount), 5, x)
-					excelutils.SetCell(fmt.Sprintf("%v", groupCount), 6, x)
-/*					if adCount == groupCount {
-						excelutils.SetCellStyleColor("green")
-					} else {
-
-					}*/
-					x = x + 1
-				}
+			adCount := 0
+			groupCount := 0
+			if !syn.InJira && !syn.InConfluence {
+				log.Fatal("Error in setup")
 			}
+			if syn.InConfluence {
+				cfg.AdGroup = syn.AdGroup
+				cfg.Localgroup = syn.LocalGroup
+				cfg.AddOperation = syn.DoAdd
+				cfg.RemoveOperation = syn.DoRemove
+				cfg.AutoDisable = syn.AutoDisable
+				adCount, groupCount = SyncGroupInTool(cfg, toolClient)
+				// Dirty Solution - find a better?
+				excelutils.SetCell(fmt.Sprintf("%v", adCount), 5, x)
+				excelutils.SetCell(fmt.Sprintf("%v", groupCount), 6, x)
+				/*					if adCount == groupCount {
+										excelutils.SetCellStyleColor("green")
+									} else {
+
+									}*/
+				x = x + 1
+			}
+		}
 	}
 	err := endReport(cfg)
 	if err != nil {
@@ -152,16 +165,17 @@ func ConfluenceSyncAdGroup(propPtr string) {
 
 func toollogin(cfg Config) *client.ConfluenceClient {
 	var config = client.ConfluenceConfig{}
-	config.Username = cfg.User
-	config.Password = cfg.Pass
+	config.Username = cfg.ConfUser
+	config.Password = cfg.ConfPass
+	config.UseToken = cfg.UseToken
 	config.URL = cfg.ConfHost
 	config.Debug = false
 	return client.Client(&config)
 }
 
-func SyncGroupInTool(cfg Config, client *client.ConfluenceClient) (adcount int,  localcount int){
+func SyncGroupInTool(cfg Config, client *client.ConfluenceClient) (adcount int, localcount int) {
 	var toolGroupMemberNames map[string]adutils.ADUser
-	deactCounter:=0
+	deactCounter := 0
 	fmt.Printf("\n")
 	fmt.Printf("SyncGroup Confluence AdGroup: %s LocalGroup: %s \n", cfg.AdGroup, cfg.Localgroup)
 	fmt.Printf("\n")
@@ -226,13 +240,13 @@ func SyncGroupInTool(cfg Config, client *client.ConfluenceClient) (adcount int, 
 			for _, nad := range notInAD {
 				if nad.DN == "" {
 
-					dn, err := adutils.GetActiveUserDN(nad.Uname,cfg.BaseDN)
+					dn, err := adutils.GetActiveUserDN(nad.Uname, cfg.BaseDN)
 					if err == nil {
 						nad.DN = dn.DN
 						nad.Mail = dn.Mail
 						nad.Name = dn.Name
 					} else {
-						udn, err := adutils.GetAllUserDN(nad.Uname,cfg.BaseDN)
+						udn, err := adutils.GetAllUserDN(nad.Uname, cfg.BaseDN)
 						if err == nil {
 							nad.DN = udn.DN
 							nad.Mail = udn.Mail
@@ -241,7 +255,7 @@ func SyncGroupInTool(cfg Config, client *client.ConfluenceClient) (adcount int, 
 							// Avoid being kicked out
 							deactCounter++
 							if deactCounter > 10 {
-								_, errn := adutils.GetAllUserDN("perolo",cfg.BaseDN)
+								_, errn := adutils.GetAllUserDN("perolo", cfg.BaseDN)
 								if errn != nil {
 									fmt.Printf("Error: finding %s \n", "perolo")
 									panic(errn)
@@ -291,16 +305,30 @@ func SyncGroupInTool(cfg Config, client *client.ConfluenceClient) (adcount int, 
 		if cfg.RemoveOperation {
 			for _, notin := range notInAD {
 				if notin.Err == "" {
+					fmt.Printf("About to remove user. Group: %s uname: %s Name: %s \n", cfg.Localgroup, notin.Uname, notin.Name)
 
-					removeUser := client.RemoveGroupMembers(cfg.Localgroup, []string{notin.Uname})
-					fmt.Printf("Remove user. Group: %s status: %s \n", cfg.Localgroup, removeUser.Status)
-					fmt.Printf("Message: %s \n", removeUser.Message)
-					fmt.Printf("Users Removed: %s \n", removeUser.UsersRemoved)
-					fmt.Printf("Users Skipped: %s \n", removeUser.UsersSkipped)
-				} else {
-					fmt.Printf("Ad Problems skipping remove: %s \n", notin.Uname)
+					fmt.Printf("Remove [y/n]: ")
+
+					reader := bufio.NewReader(os.Stdin)
+					response, err := reader.ReadString('\n')
+					if err != nil {
+						log.Fatal(err)
+					}
+
+					response = strings.ToLower(strings.TrimSpace(response))
+
+					if response == "y" || response == "yes" {
+						removeUser := client.RemoveGroupMembers(cfg.Localgroup, []string{notin.Uname})
+						fmt.Printf("Remove user. Group: %s status: %s \n", cfg.Localgroup, removeUser.Status)
+						fmt.Printf("Message: %s \n", removeUser.Message)
+						fmt.Printf("Users Removed: %s \n", removeUser.UsersRemoved)
+						fmt.Printf("Users Skipped: %s \n", removeUser.UsersSkipped)
+
+					} else {
+						fmt.Printf("Respone No -  skipping remove: %s \n", notin.Uname)
+					}
+					//fmt.Printf("Not Yet Implemented\n")
 				}
-				//fmt.Printf("Not Yet Implemented\n")
 			}
 		}
 
@@ -332,9 +360,14 @@ func getUnamesInToolGroup(theClient *client.ConfluenceClient, localgroup string)
 	start := 0
 	max := 50
 	for cont {
-		groupMembers, err := theClient.GetGroupMembers(localgroup, &client.GetGroupMembersOptions{StartAt: start, MaxResults: max, ShowExtendedDetails: true})
+		groupMembers, err, resp := theClient.GetGroupMembers(localgroup, &client.GetGroupMembersOptions{StartAt: start, MaxResults: max, ShowExtendedDetails: true})
+
 		if err != nil {
-			panic(err)
+			panic(err) // theClient.AddGroups(localgroup)
+		} else {
+			if resp.StatusCode == 500 {
+				theClient.AddGroups([]string{localgroup})
+			}
 		}
 		for _, member := range groupMembers.Users {
 			if _, ok := groupMemberNames[member.Name]; !ok {

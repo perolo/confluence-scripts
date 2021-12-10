@@ -14,9 +14,11 @@ import (
 )
 
 type Config struct {
-	User     string `properties:"user"`
-	Pass     string `properties:"password"`
-	ConfHost string `properties:"confhost"`
+	ConfHost  string `properties:"confhost"`
+	ConfUser  string `properties:"confuser"`
+	ConfPass  string `properties:"confpass"`
+	ConfToken string `properties:"conftoken"`
+	UseToken  bool   `properties:"usetoken"`
 }
 type MergConfig struct {
 	GitLabHost       string `properties:"gitlabhost"`
@@ -44,6 +46,7 @@ type MergeData struct {
 	Link         string `json:"link"`
 	UpVotes      int    `json:"upvotes"`
 	DownVotes    int    `json:"downvotes"`
+	WIP          bool   `json:"wip"`
 }
 type ContributorData struct {
 	USer          string `json:"user"`
@@ -63,12 +66,18 @@ func GitLabMergeReport(propPtr string) {
 	if err := p.Decode(&cfg); err != nil {
 		log.Fatal(err)
 	}
+	if cfg.UseToken {
+		cfg.ConfPass = cfg.ConfToken
+	} else {
+	}
+
 	mergecfg.CreateAttachment = true
 	if mergecfg.CreateAttachment {
 		// Access Confluence
 		var config = client.ConfluenceConfig{}
-		config.Username = cfg.User
-		config.Password = cfg.Pass
+		config.Username = cfg.ConfUser
+		config.Password = cfg.ConfPass
+		config.UseToken = cfg.UseToken
 		config.URL = cfg.ConfHost
 		//config.Debug = true
 
@@ -125,6 +134,7 @@ func createProjectReport(confluence *client.ConfluenceClient, data Data, copt cl
 			if cfg.CreateAttachment {
 				var i MergeData
 				i.Title = merge.Title
+				i.WIP = merge.WorkInProgress
 				i.Author = merge.Author.Name
 				i.State = merge.State
 				i.Status = merge.MergeStatus

@@ -19,8 +19,6 @@ func main() {
 	// or through Decode
 	type Config struct {
 		ConfHost    string `properties:"confhost"`
-		User        string `properties:"user"`
-		Pass        string `properties:"password"`
 		Source      string `properties:"source"`
 		Destination string `properties:"destination"`
 	}
@@ -32,6 +30,7 @@ func main() {
 	var config = client.ConfluenceConfig{}
 	config.Username = cfg.User
 	config.Password = cfg.Pass
+	config.UseToken = cfg.UseToken
 	config.URL = cfg.ConfHost
 	config.Debug = false
 
@@ -48,18 +47,18 @@ func main() {
 
 		for _, space := range spaces.Spaces {
 			fmt.Printf("Space name: %s\n", space.Name)
-//			opt2 := client.SpaceOptions{Start: 0, Limit: 10,  Status: "current", SpaceKey: space.Key}
-//			opt2 := client.SpaceOptions{Start: 0, Limit: 10,  Status: "current", SpaceKey: space.Key}
-//			spaces := theClient.GetSpaces(&opt2)
-//			if (spaces.Size ==1 ) {
-				p := space.Permissions
-				added := theClient.AddSpacePermissionsForGroup(space.Key, cfg.Destination, p)
-				fmt.Printf("Permissions added : %s\n", added.Added)
-				noSpaces++
-//			} else {
-//				fmt.Printf("Archived Space : %s %v\n", space.Name, spaces.Size )
+			//			opt2 := client.SpaceOptions{Start: 0, Limit: 10,  Status: "current", SpaceKey: space.Key}
+			//			opt2 := client.SpaceOptions{Start: 0, Limit: 10,  Status: "current", SpaceKey: space.Key}
+			//			spaces := theClient.GetSpaces(&opt2)
+			//			if (spaces.Size ==1 ) {
+			p := space.Permissions
+			added := theClient.AddSpacePermissionsForGroup(space.Key, cfg.Destination, p)
+			fmt.Printf("Permissions added : %s\n", added.Added)
+			noSpaces++
+			//			} else {
+			//				fmt.Printf("Archived Space : %s %v\n", space.Name, spaces.Size )
 
-//			}
+			//			}
 		}
 
 		start = start + increase

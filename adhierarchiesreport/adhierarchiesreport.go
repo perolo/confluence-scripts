@@ -12,8 +12,9 @@ import (
 
 type Config struct {
 	ConfHost        string `properties:"confhost"`
-	User            string `properties:"user"`
-	Pass            string `properties:"password"`
+	ConfUser  string `properties:"confuser"`
+	ConfPass  string `properties:"confpass"`
+	UseToken        bool   `properties:"usetoken"`
 	Bindusername    string `properties:"bindusername"`
 	Bindpassword    string `properties:"bindpassword"`
 	BaseDN           string `properties:"basedn"`
@@ -31,8 +32,9 @@ func CreateAdHierarchiesReport(propPtr, adgroup string, expandUsers bool) {
 		log.Fatal(err)
 	}
 	var config = client.ConfluenceConfig{}
-	config.Username = cfg.User
-	config.Password = cfg.Pass
+	config.Username = cfg.ConfUser
+	config.Password = cfg.ConfPass
+	config.UseToken = cfg.UseToken
 	config.URL = cfg.ConfHost
 
 	confluence = client.Client(&config)

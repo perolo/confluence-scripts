@@ -9,8 +9,6 @@ import (
 
 type Config struct {
 	ConfHost    string `properties:"confhost"`
-	User        string `properties:"user"`
-	Pass        string `properties:"password"`
 	Space       string `properties:"space"`
 	SearchLabel string `properties:"searchlabel"`
 }
@@ -30,6 +28,7 @@ func RemoveSpaceCategory(propPtr string) {
 	config = client.ConfluenceConfig{}
 	config.Username = cfg.User
 	config.Password = cfg.Pass
+	config.UseToken = cfg.UseToken
 	config.URL = cfg.ConfHost
 	//config.Debug = true
 

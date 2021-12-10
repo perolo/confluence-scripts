@@ -13,15 +13,14 @@ import (
 	"os"
 )
 
-func CheckPageExists(copt client.OperationOptions, confluence *client.ConfluenceClient){
-
+func CheckPageExists(copt client.OperationOptions, confluence *client.ConfluenceClient) {
 
 	opt2 := client.PageOptions{Start: 0, Limit: 10}
 	/*
 		https://confluence.assaabloy.net/rest/api/content?spaceKey=STPIM&expand=metadata.labels
 		https://confluence.assaabloy.net/rest/api/content?
 	*/
-	content := fmt.Sprintf("spaceKey=%s&title=%s" ,copt.SpaceKey,  url.QueryEscape(copt.Title))
+	content := fmt.Sprintf("spaceKey=%s&title=%s", copt.SpaceKey, url.QueryEscape(copt.Title))
 
 	pages := confluence.GetContent(content, &opt2)
 
@@ -29,7 +28,7 @@ func CheckPageExists(copt client.OperationOptions, confluence *client.Confluence
 		fmt.Printf("Pages name: %s type: %s\n", page.Title, page.Type)
 	}
 
-	if (len(pages.Results) == 0) {
+	if len(pages.Results) == 0 {
 
 		f, err := ioutil.TempFile(os.TempDir(), "page*.html")
 		if err != nil {
@@ -42,11 +41,11 @@ func CheckPageExists(copt client.OperationOptions, confluence *client.Confluence
 		defer f.Close()
 
 		//	defer os.Remove(f.Name())
-//		var copt client.OperationOptions
+		//		var copt client.OperationOptions
 
-//		copt.Title = "Group User Report: " + group
-//		copt.SpaceKey = cfg.Space
-//		Utilities.Check(err)
+		//		copt.Title = "Group User Report: " + group
+		//		copt.SpaceKey = cfg.Space
+		//		Utilities.Check(err)
 		copt.Filepath = f.Name()
 		copt.BodyOnly = true
 
@@ -57,14 +56,31 @@ func CheckPageExists(copt client.OperationOptions, confluence *client.Confluence
 
 		confluence.AddPage(copt.Title, copt.SpaceKey, copt.Filepath, true, false, 0)
 
-/*
-		if confluence.AddOrUpdatePage(copt) {
-			fmt.Printf("%s uploaded ok", copt.Title)
-		}
-*/
+		/*
+			if confluence.AddOrUpdatePage(copt) {
+				fmt.Printf("%s uploaded ok", copt.Title)
+			}
+		*/
 	}
 }
 
+func CheckPageExists2(copt client.OperationOptions, confluence *client.ConfluenceClient) bool {
+
+	opt2 := client.PageOptions{Start: 0, Limit: 10}
+	/*
+		https://confluence.assaabloy.net/rest/api/content?spaceKey=STPIM&expand=metadata.labels
+		https://confluence.assaabloy.net/rest/api/content?
+	*/
+	content := fmt.Sprintf("spaceKey=%s&title=%s", copt.SpaceKey, url.QueryEscape(copt.Title))
+
+	pages := confluence.GetContent(content, &opt2)
+
+	for _, page := range pages.Results {
+		fmt.Printf("Pages name: %s type: %s\n", page.Title, page.Type)
+	}
+
+	return len(pages.Results) != 0
+}
 
 func CreateAttachmentAndUpload(data interface{}, copt client.OperationOptions, confluence *client.ConfluenceClient, comment string) error {
 	buf, err := json.Marshal(data)
@@ -84,7 +100,7 @@ func CreateAttachmentAndUpload(data interface{}, copt client.OperationOptions, c
 	return AddAttachmentAndUpload(confluence, copt, attname, ff.Name(), comment)
 }
 
-func AddAttachmentAndUpload(confluence *client.ConfluenceClient, copt client.OperationOptions, attname string, fname string, comment string) error{
+func AddAttachmentAndUpload(confluence *client.ConfluenceClient, copt client.OperationOptions, attname string, fname string, comment string) error {
 	//TODO Refactor to simplify, why copt?
 	results := confluence.SearchPages(copt.Title, copt.SpaceKey)
 	if results.Size == 1 {
@@ -111,4 +127,3 @@ func AddAttachmentAndUpload(confluence *client.ConfluenceClient, copt client.Ope
 	}
 	return nil
 }
-

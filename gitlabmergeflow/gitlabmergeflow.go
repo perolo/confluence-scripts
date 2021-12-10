@@ -14,9 +14,11 @@ import (
 )
 
 type Config struct {
-	User     string `properties:"user"`
-	Pass     string `properties:"password"`
-	ConfHost string `properties:"confhost"`
+	ConfUser  string `properties:"confuser"`
+	ConfPass  string `properties:"confpass"`
+	ConfHost  string `properties:"confhost"`
+	ConfToken string `properties:"conftoken"`
+	UseToken  bool   `properties:"usetoken"`
 }
 type MergConfig struct {
 	GitLabHost       string `properties:"gitlabhost"`
@@ -63,12 +65,18 @@ func GitLabMergeFlowReport(propPtr string) {
 	if err := p.Decode(&cfg); err != nil {
 		log.Fatal(err)
 	}
+	if cfg.UseToken {
+		cfg.ConfPass = cfg.ConfToken
+	} else {
+	}
+
 	mergecfg.CreateAttachment = true
 	if mergecfg.CreateAttachment {
 		// Access Confluence
 		var config = client.ConfluenceConfig{}
-		config.Username = cfg.User
-		config.Password = cfg.Pass
+		config.Username = cfg.ConfUser
+		config.Password = cfg.ConfPass
+		config.UseToken = cfg.UseToken
 		config.URL = cfg.ConfHost
 		//config.Debug = true
 
