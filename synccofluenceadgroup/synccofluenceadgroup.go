@@ -117,10 +117,10 @@ func ConfluenceSyncAdGroup(propPtr string) {
 	}
 	// Temporary workaround solution - need to find better?
 	if cfg.UseToken {
-		cfg.ConfUser = cfg.ConfUser
+		//cfg.ConfUser = cfg.ConfUser
 		cfg.ConfPass = cfg.ConfToken
 	} else {
-		cfg.ConfUser = cfg.ConfUser
+		//cfg.ConfUser = cfg.ConfUser
 	}
 
 	toolClient := toollogin(cfg)
@@ -147,11 +147,11 @@ func ConfluenceSyncAdGroup(propPtr string) {
 				// Dirty Solution - find a better?
 				excelutils.SetCell(fmt.Sprintf("%v", adCount), 5, x)
 				excelutils.SetCell(fmt.Sprintf("%v", groupCount), 6, x)
-				/*					if adCount == groupCount {
-										excelutils.SetCellStyleColor("green")
-									} else {
+				if adCount == groupCount {
+					excelutils.SetCellStyleColor("green")
+				} else {
 
-									}*/
+				}
 				x = x + 1
 			}
 		}

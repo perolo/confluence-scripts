@@ -12,6 +12,10 @@ import (
 
 type Config struct {
 	ConfHost    string `properties:"confhost"`
+	ConfPass    string `properties:"confpass"`
+	ConfUser    string `properties:"confuser"`
+	UseToken    bool   `properties:"usetoken"`
+	ConfToken   string `properties:"conftoken"`
 	File        string `properties:"file"`
 	ConfPage    string `properties:"confluencepage"`
 	ConfSpace   string `properties:"confluencespace"`
@@ -30,11 +34,14 @@ func main() {
 		log.Fatal(err)
 	}
 	var config = client.ConfluenceConfig{}
-	config.Username = cfg.User
-	config.Password = cfg.Pass
+	config.Username = cfg.ConfUser
+	config.Password = cfg.ConfPass
 	config.UseToken = cfg.UseToken
 	config.URL = cfg.ConfHost
 	config.Debug = false
+	if cfg.UseToken {
+		config.Password = cfg.ConfToken
+	}
 
 	var copt client.OperationOptions
 	confluenceClient := client.Client(&config)

@@ -2,10 +2,10 @@ package addgrouppage
 
 import (
 	"fmt"
-	"git.aa.st/perolo/confluence-utils/Utilities/htmlutils"
 	"github.com/magiconair/properties"
 	"github.com/perolo/confluence-prop/client"
 	"github.com/perolo/confluence-scripts/utilities"
+	"github.com/perolo/confluence-scripts/utilities/htmlutils"
 	"io/ioutil"
 	"log"
 	"os"

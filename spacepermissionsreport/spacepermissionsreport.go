@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"github.com/magiconair/properties"
 	"github.com/perolo/confluence-prop/client"
+	"github.com/perolo/confluence-scripts/schedulerutil"
 	"github.com/perolo/confluence-scripts/utilities"
+	"github.com/perolo/confluence-scripts/utilities/searchutils"
 	"github.com/perolo/excel-utils"
 	"log"
 	"path/filepath"
@@ -53,12 +55,12 @@ func SpacePermissionsReport(propPtr string) {
 	} else {
 		reportBase := cfg.File
 		for _, category := range Categories {
-			//			if schedulerutil.CheckScheduleDetail("SpacePermissionsReport-" + category, 7*time.Hour*24,cfg.Reset, schedulerutil.DummyFunc,"jiracategory.properties") {
-			cfg.SpaceCategory = category
-			cfg.File = fmt.Sprintf(reportBase, "-"+category)
-			fmt.Printf("Category: %s \n", category)
-			CreateSpacePermissionsReport(cfg)
-			//			}
+			if schedulerutil.CheckScheduleDetail("SpacePermissionsReport-"+category, 7*time.Hour*24, cfg.Reset, schedulerutil.DummyFunc, "jiracategory.properties") {
+				cfg.SpaceCategory = category
+				cfg.File = fmt.Sprintf(reportBase, "-"+category)
+				fmt.Printf("Category: %s \n", category)
+				CreateSpacePermissionsReport(cfg)
+			}
 		}
 	}
 }
@@ -89,21 +91,23 @@ func CreateSpacePermissionsReport(cfg ReportConfig) {
 	excelutils.NextLine()
 	excelutils.AutoFilterStart()
 	excelutils.SetTableHeader()
-	excelutils.WiteCell("Space Name")
+	excelutils.WiteCellnc("Space Name")
 	excelutils.SetTableHeader()
-	excelutils.NextCol()
+	excelutils.WiteCellnc("Space Owner")
 	excelutils.SetTableHeader()
-	excelutils.WiteCell("Space Key")
+	//	excelutils.NextCol()
+	//	excelutils.SetTableHeader()
+	excelutils.WiteCellnc("Space Key")
 	//excelutils.SetCellStyleRotate()
-	excelutils.NextCol()
+	//	excelutils.NextCol()
 	excelutils.SetTableHeader()
-	excelutils.WiteCell("Type")
+	excelutils.WiteCellnc("Type")
 	//excelutils.SetCellStyleRotate()
-	excelutils.NextCol()
+	//	excelutils.NextCol()
 	excelutils.SetTableHeader()
-	excelutils.WiteCell("Name")
+	excelutils.WiteCellnc("Name")
 	//excelutils.SetCellStyleRotate()
-	excelutils.NextCol()
+	//	excelutils.NextCol()
 	excelutils.SetCellStyleRotateN(len(*types))
 	excelutils.WriteColumnsln(*types)
 	noSpaces := 0
@@ -119,6 +123,19 @@ func CreateSpacePermissionsReport(cfg ReportConfig) {
 			if space.Type == "global" {
 				noSpaces++
 				fmt.Printf("Space: %s \n", space.Name)
+				SpaceOwner := ""
+				if cfg.SpaceCategory == "gtt" {
+					found, page := searchutils.SearchSpacePage(theClient, space.Key)
+					if found {
+						ownerFound, ownerName := searchutils.GetOwner(theClient, page)
+						if ownerFound {
+							SpaceOwner = ownerName
+						}
+					}
+				}
+
+				//htmlutils.WriteWrapLink(f, cfg.ConfHost+"/display/"+spaceKey+"/?pageId="+page.ID, "Space Description")
+
 				if cfg.Groups {
 					start := 0
 					cont := true
@@ -131,6 +148,7 @@ func CreateSpacePermissionsReport(cfg ReportConfig) {
 						for _, group := range groups.Groups {
 							excelutils.ResetCol()
 							excelutils.WiteCellnc(space.Name)
+							excelutils.WiteCellnc(SpaceOwner)
 							//excelutils.WiteCellnc(space.Key)
 							excelutils.WiteCellHyperLinknc(space.Key, cfg.ConfHost+"/spaces/spacepermissions.action?key="+space.Key) //https://confluence.assaabloy.net/spaces/spacepermissions.action?key=REL
 							excelutils.WiteCellnc("Group")
@@ -172,6 +190,7 @@ func CreateSpacePermissionsReport(cfg ReportConfig) {
 						for _, user := range users.Users {
 							excelutils.ResetCol()
 							excelutils.WiteCellnc(space.Name)
+							excelutils.WiteCellnc(SpaceOwner)
 							//excelutils.WiteCellnc(space.Key)
 							excelutils.WiteCellHyperLinknc(space.Key, cfg.ConfHost+"/spaces/spacepermissions.action?key="+space.Key)
 							excelutils.WiteCellnc("User")

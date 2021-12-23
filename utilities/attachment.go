@@ -3,9 +3,9 @@ package utilities
 import (
 	"encoding/json"
 	"fmt"
-	"git.aa.st/perolo/confluence-utils/Utilities/htmlutils"
 	"github.com/kennygrant/sanitize"
 	"github.com/perolo/confluence-prop/client"
+	"github.com/perolo/confluence-scripts/utilities/htmlutils"
 	"github.com/perolo/jira-scripts/jirautils"
 	"io/ioutil"
 	"log"

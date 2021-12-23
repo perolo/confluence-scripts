@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/magiconair/properties"
 	"github.com/perolo/confluence-prop/client"
+	"github.com/perolo/confluence-scripts/schedulerutil"
 	"github.com/perolo/confluence-scripts/utilities"
 	"github.com/perolo/excel-utils"
 	"log"
@@ -59,12 +60,12 @@ func SpacePermissionsReport(propPtr string) {
 	} else {
 		reportBase := cfg.File
 		for _, group := range Groups {
-			//			if schedulerutil.CheckScheduleDetail("SpacePermissionsReport-"+group, 7*time.Hour*24, tr, schedulerutil.DummyFunc, "jiracategory.properties") {
-			cfg.Group = group
-			cfg.File = fmt.Sprintf(reportBase, "-groupreport-"+group)
-			fmt.Printf("Category: %s \n", group)
-			CreateGroupPermissionsReport(cfg)
-			//			}
+			if schedulerutil.CheckScheduleDetail("GrouPermissionsReport-"+group, 7*time.Hour*24, cfg.Reset, schedulerutil.DummyFunc, "jiracategory.properties") {
+				cfg.Group = group
+				cfg.File = fmt.Sprintf(reportBase, "-groupreport-"+group)
+				fmt.Printf("Category: %s \n", group)
+				CreateGroupPermissionsReport(cfg)
+			}
 		}
 	}
 }

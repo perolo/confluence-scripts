@@ -19,6 +19,10 @@ func main() {
 	// or through Decode
 	type Config struct {
 		ConfHost    string `properties:"confhost"`
+		ConfPass    string `properties:"confpass"`
+		ConfUser    string `properties:"confuser"`
+		UseToken    bool   `properties:"usetoken"`
+		ConfToken   string `properties:"conftoken"`
 		Source      string `properties:"source"`
 		Destination string `properties:"destination"`
 	}
@@ -28,11 +32,15 @@ func main() {
 	}
 
 	var config = client.ConfluenceConfig{}
-	config.Username = cfg.User
-	config.Password = cfg.Pass
+	config.Username = cfg.ConfUser
+	config.Password = cfg.ConfPass
 	config.UseToken = cfg.UseToken
 	config.URL = cfg.ConfHost
-	config.Debug = false
+	//config.Debug = true
+
+	if cfg.UseToken {
+		config.Password = cfg.ConfToken
+	}
 
 	theClient := client.Client(&config)
 

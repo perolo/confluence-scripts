@@ -12,6 +12,10 @@ import (
 
 type Config struct {
 	ConfHost  string `properties:"confhost"`
+	ConfPass  string `properties:"confpass"`
+	ConfUser  string `properties:"confuser"`
+	UseToken  bool   `properties:"usetoken"`
+	ConfToken string `properties:"conftoken"`
 	MacroPath string `properties:"macropath"`
 }
 
@@ -51,11 +55,14 @@ func main() {
 
 	// Access Confluence
 	var config = client.ConfluenceConfig{}
-	config.Username = cfg.User
-	config.Password = cfg.Pass
+	config.Username = cfg.ConfUser
+	config.Password = cfg.ConfPass
 	config.UseToken = cfg.UseToken
 	config.URL = cfg.ConfHost
 	//config.Debug = true
+	if cfg.UseToken {
+		config.Password = cfg.ConfToken
+	}
 
 	confluence := client.Client(&config)
 
