@@ -36,6 +36,7 @@ type Config struct {
 	ConfPage        string `properties:"confluencepage"`
 	ConfSpace       string `properties:"confluencespace"`
 	ConfAttName     string `properties:"conlfuenceattachment"`
+	Reset           bool   `properties:"reset"`
 	Bindusername    string `properties:"bindusername"`
 	Bindpassword    string `properties:"bindpassword"`
 	BaseDN          string `properties:"basedn"`
@@ -131,6 +132,8 @@ func ConfluenceSyncAdGroup(propPtr string) {
 		SyncGroupInTool(cfg, toolClient)
 	} else {
 		for _, syn := range GroupSyncs {
+			// If this is enabled the reports are partial
+			//			if schedulerutil.CheckScheduleDetail(fmt.Sprintf("ConfluenceSyncAdGroup-%s", syn.LocalGroup), time.Hour*24, cfg.Reset, schedulerutil.DummyFunc, "jiracategory.properties") {
 
 			adCount := 0
 			groupCount := 0
@@ -152,9 +155,10 @@ func ConfluenceSyncAdGroup(propPtr string) {
 				} else {
 
 				}
-				x = x + 1
 			}
 		}
+		x = x + 1
+		//		}
 	}
 	err := endReport(cfg)
 	if err != nil {

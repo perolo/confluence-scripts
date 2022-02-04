@@ -127,3 +127,15 @@ func AddAttachmentAndUpload(confluence *client.ConfluenceClient, copt client.Ope
 	}
 	return nil
 }
+func DownloadAttachment(confluence *client.ConfluenceClient, copt client.OperationOptions, attname string) error {
+	//TODO Refactor to simplify, why copt?
+	results := confluence.SearchPages(copt.Title, copt.SpaceKey)
+	if results.Size == 1 {
+		attId, data, err := confluence.GetPageAttachmentById(results.Results[0].ID, attname)
+		if err == nil {
+			fmt.Printf("Attid: %v, content: %s", attId.Size, data)
+		}
+		return err
+	}
+	return nil
+}

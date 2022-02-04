@@ -73,7 +73,7 @@ func CreatePersonalSpacesReport(cfg ReportConfig) {
 	excelutils.SetCellFontHeader()
 	excelutils.WiteCellln("Introduction")
 	excelutils.WiteCellln("Please Do not edit this page!")
-	excelutils.WiteCellln("This page is created by the User Report script: " + "https://git.aa.st/perolo/confluence-scripts" + "/" + "PersonalSpacesReport")
+	excelutils.WiteCellln("This page is created by the User Report script: " + "https://github.com/perolo/confluence-scripts" + "/" + "PersonalSpacesReport")
 	t := time.Now()
 	excelutils.WiteCellln("Created by: " + cfg.ConfUser + " : " + t.Format(time.RFC3339))
 	excelutils.WiteCellln("")
