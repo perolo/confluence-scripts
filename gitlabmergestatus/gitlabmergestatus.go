@@ -3,11 +3,10 @@ package gitlabmergestatus
 import (
 	"fmt"
 	"github.com/magiconair/properties"
-	"github.com/perolo/confluence-prop/client"
+	"github.com/perolo/confluence-client/client"
 	"github.com/perolo/confluence-scripts/utilities"
 	"github.com/perolo/excel-utils"
 	"github.com/perolo/jira-scripts/jirautils"
-	"github.com/xanzy/go-gitlab"
 	"log"
 	"sort"
 	"time"

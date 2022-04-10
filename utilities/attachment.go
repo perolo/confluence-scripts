@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/kennygrant/sanitize"
-	"github.com/perolo/confluence-prop/client"
+	"github.com/perolo/confluence-client/client"
 	"github.com/perolo/confluence-scripts/utilities/htmlutils"
 	"github.com/perolo/jira-scripts/jirautils"
 	"io/ioutil"

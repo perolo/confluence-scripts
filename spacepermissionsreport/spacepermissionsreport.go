@@ -4,7 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"github.com/magiconair/properties"
-	"github.com/perolo/confluence-prop/client"
+	"github.com/perolo/confluence-client/client"
 	"github.com/perolo/confluence-scripts/schedulerutil"
 	"github.com/perolo/confluence-scripts/utilities"
 	"github.com/perolo/confluence-scripts/utilities/searchutils"

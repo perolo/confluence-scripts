@@ -4,22 +4,20 @@ import (
 	"flag"
 	"fmt"
 	"github.com/magiconair/properties"
-	"github.com/perolo/ad-utils"
-	"github.com/perolo/confluence-prop/client"
+	"github.com/perolo/confluence-client/client"
 	"github.com/perolo/confluence-scripts/utilities"
 	"log"
 )
 
 type Config struct {
-	ConfHost        string `properties:"confhost"`
-	ConfUser  string `properties:"confuser"`
-	ConfPass  string `properties:"confpass"`
-	UseToken        bool   `properties:"usetoken"`
-	Bindusername    string `properties:"bindusername"`
-	Bindpassword    string `properties:"bindpassword"`
-	BaseDN           string `properties:"basedn"`
+	ConfHost     string `properties:"confhost"`
+	ConfUser     string `properties:"confuser"`
+	ConfPass     string `properties:"confpass"`
+	UseToken     bool   `properties:"usetoken"`
+	Bindusername string `properties:"bindusername"`
+	Bindpassword string `properties:"bindpassword"`
+	BaseDN       string `properties:"basedn"`
 }
-
 
 func CreateAdHierarchiesReport(propPtr, adgroup string, expandUsers bool) {
 	var copt client.OperationOptions
@@ -40,7 +38,7 @@ func CreateAdHierarchiesReport(propPtr, adgroup string, expandUsers bool) {
 	confluence = client.Client(&config)
 
 	adutils.InitAD(cfg.Bindusername, cfg.Bindpassword)
-	var roothier [] adutils.ADHierarchy
+	var roothier []adutils.ADHierarchy
 	var newhierarchy adutils.ADHierarchy
 	newhierarchy.Name = adgroup
 	newhierarchy.Parent = ""
@@ -59,7 +57,7 @@ func CreateAdHierarchiesReport(propPtr, adgroup string, expandUsers bool) {
 			for _, h := range hier {
 				users, _ := adutils.GetUnamesInGroup(h.Name, cfg.BaseDN)
 				for _, u := range users {
-					hier = append(hier,adutils.ADHierarchy{Name: u.Name, Parent: h.Name})
+					hier = append(hier, adutils.ADHierarchy{Name: u.Name, Parent: h.Name})
 				}
 			}
 
@@ -67,7 +65,7 @@ func CreateAdHierarchiesReport(propPtr, adgroup string, expandUsers bool) {
 
 		utilities.CheckPageExists(copt, confluence)
 		err = utilities.CreateAttachmentAndUpload(hier, copt, confluence, "Created by AD Hierarchies Report")
-		if err!= nil {
+		if err != nil {
 			panic(err)
 		}
 

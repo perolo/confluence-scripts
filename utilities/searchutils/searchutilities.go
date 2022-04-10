@@ -1,7 +1,7 @@
 package searchutils
 
 import (
-	"github.com/perolo/confluence-prop/client"
+	"github.com/perolo/confluence-client/client"
 	"golang.org/x/net/html"
 	"regexp"
 	"strings"
