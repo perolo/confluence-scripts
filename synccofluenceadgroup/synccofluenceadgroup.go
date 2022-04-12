@@ -152,9 +152,8 @@ func ConfluenceSyncAdGroup(propPtr string) {
 					excelutils.SetCellStyleColor("green")
 				}
 			}
+			x++
 		}
-		x = x + 1
-		//		}
 	}
 	err := endReport(cfg)
 	if err != nil {
@@ -339,7 +338,7 @@ func SyncGroupInTool(cfg Config, client *client.ConfluenceClient) (adcount int, 
 func TryDeactivateUserConfluence(client *client.ConfluenceClient, deactuser string) {
 	deactUser, resp := client.GetUserDetails(deactuser)
 	if resp.StatusCode == 200 {
-		if deactUser.HasAccessToUseConfluence == true {
+		if deactUser.HasAccessToUseConfluence {
 			fmt.Printf("Deactivating User: %s  \n", deactuser)
 			mess, resp2 := client.DeactivateUser(deactuser)
 			fmt.Printf("User: %s Deactivated, message: %s response: %v \n", deactuser, mess.Message, resp2.StatusCode)

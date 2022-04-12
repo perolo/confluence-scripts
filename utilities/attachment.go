@@ -109,21 +109,21 @@ func AddAttachmentAndUpload(confluence *client.ConfluenceClient, copt client.Ope
 			if attId != nil && attId.Size == 0 {
 				_, _, err = confluence.AddAttachment(results.Results[0].ID, attname, fname, comment)
 				if err != nil {
-					return fmt.Errorf("Failed to add attachemt to Page: %s err: %s \n", copt.Title, err)
+					return fmt.Errorf("failed to add attachemt to Page: %s err: %s ", copt.Title, err)
 				} else {
 					fmt.Printf("Added attachment to page: %s \n", copt.Title)
 				}
 			} else {
-				return fmt.Errorf("Failed to add attachment to Page: %s err: %s \n", copt.Title, err)
+				return fmt.Errorf("failed to add attachment to Page: %s err: %s ", copt.Title, err)
 			}
 		} else {
 			_, _, err = confluence.UpdateAttachment(results.Results[0].ID, attId.Results[0].ID, attname, fname, comment)
 			if err != nil {
-				return fmt.Errorf("Failed to update attachment to Page: %s err: %s \n", copt.Title, err)
+				return fmt.Errorf("failed to update attachment to Page: %s err: %s ", copt.Title, err)
 			}
 		}
 	} else {
-		return fmt.Errorf("Failed to find Confluence Page: \"%s\" in Space: \"%s\" \n", copt.Title, copt.SpaceKey)
+		return fmt.Errorf("failed to find Confluence Page: \"%s\" in Space: \"%s\" ", copt.Title, copt.SpaceKey)
 	}
 	return nil
 }

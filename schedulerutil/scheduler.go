@@ -53,7 +53,7 @@ func CheckScheduleDetail(report string, duration time.Duration, reset bool, dofu
 		newsched.StartTime = time.Now()
 		AllSchedules[report] = newsched
 	}
-	if (time.Now().Sub(AllSchedules[report].LastTime) > duration) || reset { //nolint:gosimple
+	if (time.Since(AllSchedules[report].LastTime) > duration) || reset {
 		uppdsched := AllSchedules[report]
 		uppdsched.StartTime = time.Now()
 		dofunc(propfile) // add bool return?
