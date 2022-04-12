@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"github.com/magiconair/properties"
+	"github.com/perolo/ad-utils"
 	"github.com/perolo/confluence-client/client"
 	"github.com/perolo/confluence-scripts/utilities"
 	"log"
@@ -51,8 +52,8 @@ func CreateAdHierarchiesReport(propPtr, adgroup string, expandUsers bool) {
 		hier = append(hier, roothier...)
 		fmt.Printf("adUnames(%v): %s \n", len(groups), groups)
 		fmt.Printf("adUnames(%v): %s \n", len(hier), hier)
-		copt.Title = "GTT Hierarchies - " + adgroup
-		copt.SpaceKey = "~per.olofsson@assaabloy.com"
+		copt.Title = "Hierarchies - " + adgroup
+		copt.SpaceKey = "DEMO"
 		if expandUsers {
 			for _, h := range hier {
 				users, _ := adutils.GetUnamesInGroup(h.Name, cfg.BaseDN)

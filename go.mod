@@ -5,11 +5,12 @@ go 1.18
 require (
 	github.com/kennygrant/sanitize v1.2.4
 	github.com/magiconair/properties v1.8.6
+	github.com/perolo/ad-utils v0.0.0-20220412081416-aef9a45b595b
 	github.com/perolo/confluence-client v0.0.0-20220408191902-81a41e5cb047
 	github.com/perolo/excel-utils v0.0.0-20220404123251-ae7963967236
+	github.com/perolo/go-gitlab v0.0.0-20220412085632-ecfdd518b625
 	github.com/perolo/jira-scripts v0.0.0-20220411180542-987c6aabe088
-	github.com/perolo/sonarqube-client v0.0.0-20190114115011-bbf950cbf60b
-	github.com/xanzy/go-gitlab v0.62.0
+	github.com/perolo/sonarqube-client v0.0.0-20220412091404-ac266ae78174
 	golang.org/x/net v0.0.0-20220407224826-aac1ed45d8e3
 )
 
@@ -22,6 +23,7 @@ require (
 	github.com/hashicorp/go-retryablehttp v0.6.8 // indirect
 	github.com/mohae/deepcopy v0.0.0-20170929034955-c48cc78d4826 // indirect
 	github.com/perolo/jira-client v0.0.0-20220410122149-d2c3be3e4688 // indirect
+	github.com/perolo/ldap.v2 v0.0.0-20220412075522-5a98471c017d // indirect
 	github.com/perolo/myexcelize v1.4.2-0.20220404083812-f49112898c31 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/richardlehane/mscfb v1.0.4 // indirect
@@ -34,4 +36,5 @@ require (
 	golang.org/x/text v0.3.7 // indirect
 	golang.org/x/time v0.0.0-20191024005414-555d28b269f0 // indirect
 	google.golang.org/appengine v1.3.0 // indirect
+	gopkg.in/asn1-ber.v1 v1.0.0-20181015200546-f715ec2f112d // indirect
 )

@@ -6,6 +6,7 @@ import (
 	"github.com/perolo/confluence-client/client"
 	"github.com/perolo/confluence-scripts/utilities"
 	"github.com/perolo/excel-utils"
+	"github.com/perolo/go-gitlab"
 	"github.com/perolo/jira-scripts/jirautils"
 	"log"
 	"sort"

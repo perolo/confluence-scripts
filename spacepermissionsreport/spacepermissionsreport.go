@@ -124,7 +124,7 @@ func CreateSpacePermissionsReport(cfg ReportConfig) {
 				noSpaces++
 				fmt.Printf("Space: %s \n", space.Name)
 				SpaceOwner := ""
-				if cfg.SpaceCategory == "gtt" {
+				if cfg.SpaceCategory == "demo" {
 					found, page := searchutils.SearchSpacePage(theClient, space.Key)
 					if found {
 						ownerFound, ownerName := searchutils.GetOwner(theClient, page)

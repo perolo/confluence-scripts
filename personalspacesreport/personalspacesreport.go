@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"github.com/magiconair/properties"
+	"github.com/perolo/ad-utils"
 	"github.com/perolo/confluence-client/client"
 	"github.com/perolo/confluence-scripts/utilities"
 	"github.com/perolo/excel-utils"

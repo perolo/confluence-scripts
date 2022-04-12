@@ -73,7 +73,7 @@ func GetArray(txt string) []string {
 	return content
 }
 func GetOwner(clie *client.ConfluenceClient, page *client.ConfluencePage) (bool, string) {
-	results := clie.GetPageById(page.ID)
+	results := clie.GetPageByID(page.ID)
 
 	if len(results.Body.View.Value) > 0 {
 		//	log.Println("Page found")

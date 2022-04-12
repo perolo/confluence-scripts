@@ -8,5 +8,5 @@ import (
 func main() {
 	propPtr := flag.String("prop", "confluence.properties", "a properties file")
 
-	adhierarchiesreport.CreateAdHierarchiesReport(*propPtr, "#AAAB - Group Technology Team")
+	adhierarchiesreport.CreateAdHierarchiesReport(*propPtr, "Some_AD_Group", false)
 }

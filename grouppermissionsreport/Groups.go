@@ -1,7 +1,6 @@
 package grouppermissionsreport
 
 var Groups = []string{
-	"gtt-guest",
-	"gtt-all",
+	"conlfluence-users",
+	"confluence-sysadmins",
 }
-

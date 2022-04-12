@@ -77,7 +77,6 @@ func AddGroupPage(propPtr string) {
 				}
 
 				defer f.Close()
-				//	group := "gtt-all"
 				copt.Title = "Group: " + group
 
 				copt.Filepath = f.Name()

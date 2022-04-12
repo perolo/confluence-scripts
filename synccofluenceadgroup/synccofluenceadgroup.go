@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"github.com/magiconair/properties"
+	"github.com/perolo/ad-utils"
 	"github.com/perolo/confluence-client/client"
 	"github.com/perolo/confluence-scripts/utilities"
 	"github.com/perolo/excel-utils"
@@ -363,7 +364,7 @@ func getUnamesInToolGroup(theClient *client.ConfluenceClient, localgroup string)
 	start := 0
 	max := 50
 	for cont {
-		groupMembers, err, resp := theClient.GetGroupMembers(localgroup, &client.GetGroupMembersOptions{StartAt: start, MaxResults: max, ShowExtendedDetails: true})
+		groupMembers, resp, err := theClient.GetGroupMembers(localgroup, &client.GetGroupMembersOptions{StartAt: start, MaxResults: max, ShowExtendedDetails: true})
 
 		if err != nil {
 			panic(err) // theClient.AddGroups(localgroup)

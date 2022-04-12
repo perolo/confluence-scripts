@@ -3,7 +3,7 @@ package gitlabuserreport
 import (
 	"fmt"
 	"github.com/magiconair/properties"
-	"github.com/xanzy/go-gitlab"
+	"github.com/perolo/go-gitlab"
 	"log"
 )
 
