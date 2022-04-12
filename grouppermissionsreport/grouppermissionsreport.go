@@ -51,7 +51,6 @@ func SpacePermissionsReport(propPtr string) {
 	}
 	if cfg.UseToken {
 		cfg.ConfPass = cfg.ConfToken
-	} else {
 	}
 
 	if cfg.Simple {

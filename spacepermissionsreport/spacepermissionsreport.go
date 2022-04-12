@@ -65,7 +65,7 @@ func SpacePermissionsReport(propPtr string) {
 	}
 }
 
-func CreateSpacePermissionsReport(cfg ReportConfig) {
+func CreateSpacePermissionsReport(cfg ReportConfig) { //nolint:funlen
 
 	excelutils.NewFile()
 
@@ -197,7 +197,7 @@ func CreateSpacePermissionsReport(cfg ReportConfig) {
 							permissions, resp := theClient.GetUserPermissionsForSpace(space.Key, user)
 							if resp.StatusCode < 200 || resp.StatusCode > 300 {
 								// one restry...
-								permissions, resp = theClient.GetUserPermissionsForSpace(space.Key, user)
+								permissions, _ = theClient.GetUserPermissionsForSpace(space.Key, user)
 							}
 							excelutils.WiteCellnc(user)
 							for _, atype := range *types {

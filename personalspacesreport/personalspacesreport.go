@@ -50,7 +50,6 @@ func PersonalSpaceReport(propPtr string) {
 	}
 	if cfg.UseToken {
 		cfg.ConfPass = cfg.ConfToken
-	} else {
 	}
 
 	adutils.InitAD(cfg.Bindusername, cfg.Bindpassword)

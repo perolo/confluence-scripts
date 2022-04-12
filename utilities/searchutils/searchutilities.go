@@ -43,7 +43,7 @@ func GetArray(txt string) []string {
 				if inner == html.StartTagToken {
 					tagcounter := 1
 					qq = text2
-					for true {
+					for {
 						inner = z.Next()
 						text3 := (string)(z.Raw())
 						//fmt.Println(text3)

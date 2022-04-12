@@ -120,8 +120,6 @@ func ConfluenceSyncAdGroup(propPtr string) {
 	if cfg.UseToken {
 		//cfg.ConfUser = cfg.ConfUser
 		cfg.ConfPass = cfg.ConfToken
-	} else {
-		//cfg.ConfUser = cfg.ConfUser
 	}
 
 	toolClient := toollogin(cfg)
@@ -152,8 +150,6 @@ func ConfluenceSyncAdGroup(propPtr string) {
 				excelutils.SetCell(fmt.Sprintf("%v", groupCount), 6, x)
 				if adCount == groupCount {
 					excelutils.SetCellStyleColor("green")
-				} else {
-
 				}
 			}
 		}
@@ -266,7 +262,7 @@ func SyncGroupInTool(cfg Config, client *client.ConfluenceClient) (adcount int, 
 								}
 								deactCounter = 0
 							}
-							if cfg.AutoDisable == true {
+							if cfg.AutoDisable {
 								TryDeactivateUserConfluence(client, nad.Uname)
 							}
 						} else {
@@ -375,7 +371,7 @@ func getUnamesInToolGroup(theClient *client.ConfluenceClient, localgroup string)
 		}
 		for _, member := range groupMembers.Users {
 			if _, ok := groupMemberNames[member.Name]; !ok {
-				if member.HasAccessToUseConfluence == true {
+				if member.HasAccessToUseConfluence {
 					var newUser adutils.ADUser
 					newUser.Uname = member.Name
 					newUser.Name = member.FullName

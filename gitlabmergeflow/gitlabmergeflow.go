@@ -67,7 +67,6 @@ func GitLabMergeFlowReport(propPtr string) {
 	}
 	if cfg.UseToken {
 		cfg.ConfPass = cfg.ConfToken
-	} else {
 	}
 
 	mergecfg.CreateAttachment = true
@@ -119,16 +118,16 @@ func createProjectReport(confluence *client.ConfluenceClient, data Data, copt cl
 	for cont {
 		opt2.Page = page
 
-		flowmerges, _, err := gitlabclient.MergeRequests.ListProjectMergeRequests(cfg.GitProjId, &opt2, nil)
-		jirautils.Check(err)
+		flowmerges, _, err2 := gitlabclient.MergeRequests.ListProjectMergeRequests(cfg.GitProjId, &opt2, nil)
+		jirautils.Check(err2)
 
 		for _, merge := range flowmerges {
 
 			fmt.Printf("Merge: %s Author: %s Upvotes: %d Downvotes: %d\n", merge.Title, merge.Author.Name, merge.Upvotes, merge.Downvotes)
 			//ListMergeRequestNotes
 			//GET /projects/:id/merge_requests/:merge_request_iid/notes
-			notes, _, err := gitlabclient.Notes.ListMergeRequestNotes(cfg.GitProjId, merge.IID, nil)
-			jirautils.Check(err)
+			notes, _, err3 := gitlabclient.Notes.ListMergeRequestNotes(cfg.GitProjId, merge.IID, nil)
+			jirautils.Check(err3)
 			for _, note := range notes {
 				if _, ok := count[note.Author.Name]; !ok {
 					count[note.Author.Name] = 1

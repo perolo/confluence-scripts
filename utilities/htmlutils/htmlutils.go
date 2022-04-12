@@ -2,7 +2,6 @@ package htmlutils
 
 import "os"
 
-
 func Check(e error) {
 	if e != nil {
 		panic(e)
@@ -47,14 +46,13 @@ func WriteBulliEnd(w *os.File) {
 	Check(err)
 }
 
-
 func WriteTableHeader1(w *os.File, s []string) {
 
 	_, err := w.WriteString("<table><tr>")
 	Check(err)
 	for _, header := range s {
-		_, err := w.WriteString("<th>" + header + "</th>")
-		Check(err)
+		_, err2 := w.WriteString("<th>" + header + "</th>")
+		Check(err2)
 	}
 	_, err = w.WriteString("</tr>\n")
 	Check(err)
@@ -65,8 +63,8 @@ func WriteTableLine(w *os.File, s []string) {
 	_, err := w.WriteString("<tr>")
 	Check(err)
 	for _, header := range s {
-		_, err := w.WriteString("<td>" + header + "</td>")
-		Check(err)
+		_, err2 := w.WriteString("<td>" + header + "</td>")
+		Check(err2)
 	}
 	_, err = w.WriteString("</tr>\n")
 	Check(err)
@@ -76,7 +74,7 @@ func WriteTableEnd(w *os.File) {
 	_, err := w.WriteString("</table>\n")
 	Check(err)
 }
-func WriteWrapLink(w *os.File,link string, name string) {
+func WriteWrapLink(w *os.File, link string, name string) {
 	_, err := w.WriteString(WrapLink(link, name))
 	Check(err)
 }
@@ -95,18 +93,19 @@ func WrapJIRA(key string, hideOptional ...bool) string {
 	if len(hideOptional) > 0 {
 		hide = hideOptional[0]
 	}
-	hideparam:= ""
+	hideparam := ""
 	if hide {
-		hideparam ="<ac:parameter ac:name=\"showSummary\">false</ac:parameter>"
+		hideparam = "<ac:parameter ac:name=\"showSummary\">false</ac:parameter>"
 	}
 	return "<p>	<ac:structured-macro ac:macro-id=\"ef027b1e-9afc-4bf1-bc01-3e464985fb8d\" ac:name=\"jira\" ac:schema-version=\"1\">" +
 		hideparam +
 		"<ac:parameter ac:name=\"server\">Shared Technologies - JIRA</ac:parameter>" +
 		"<ac:parameter ac:name=\"columns\">key,summary,type,created,updated,due,assignee,reporter,priority,status,resolution</ac:parameter>" +
 		"<ac:parameter ac:name=\"serverId\">936bba59-626d-360c-aecd-b1292bf65b83</ac:parameter>" +
-	    "<ac:parameter ac:name=>" + key + "</ac:parameter>" +
+		"<ac:parameter ac:name=>" + key + "</ac:parameter>" +
 		"</ac:structured-macro>	</p>"
 }
+
 /*
 <p>
 <ac:structured-macro ac:macro-id="6f4c01bc-8463-43fc-9434-102afcb931b1" ac:name="contentbylabel" ac:schema-version="3">
@@ -114,13 +113,14 @@ func WrapJIRA(key string, hideOptional ...bool) string {
 </ac:structured-macro>
 </p>
 */
+
 func WrapLabel(key string) string {
 	if key == "" {
 		return ""
 	}
 	return "<p>	<ac:structured-macro ac:macro-id=\"6f4c01bc-8463-43fc-9434-102afcb931b1\" ac:name=\"contentbylabel\" ac:schema-version=\"3\">" +
-			"<ac:parameter ac:name=\"cql\">label = \"" + key+ "\"</ac:parameter>" +
-			"</ac:structured-macro></p>"
+		"<ac:parameter ac:name=\"cql\">label = \"" + key + "\"</ac:parameter>" +
+		"</ac:structured-macro></p>"
 }
 
 func WrapBold(text string) string {
