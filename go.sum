@@ -28,10 +28,10 @@ github.com/perolo/excel-utils v0.0.0-20220404123251-ae7963967236 h1:q+aSVOhEKXkE
 github.com/perolo/excel-utils v0.0.0-20220404123251-ae7963967236/go.mod h1:fn3r3AS2Np7f52J8O/WhUUobsgCjuLZi+AlprqbJYRI=
 github.com/perolo/jira-client v0.0.0-20220410122149-d2c3be3e4688 h1:A4OXkasloNvk4BD/iPM1MOdW8nNNvN6pBlHmTYKfv00=
 github.com/perolo/jira-client v0.0.0-20220410122149-d2c3be3e4688/go.mod h1:/yREdu37n4JNI0KXST8PyWQjE46Iy/bB6EexMuj4pkk=
-github.com/perolo/jira-scripts v0.0.0-20220120172841-fca530294a60 h1:kXYoic/LvsfLltGKYivzT+JxLQg6vi5QzgsEsD/r8jY=
-github.com/perolo/jira-scripts v0.0.0-20220120172841-fca530294a60/go.mod h1:bEk6tG18gg+s8QW+u/TUIxpNoMGXC729y7tsW79RGfk=
-github.com/perolo/myexcelize v1.4.2-0.20220404082214-4c978f745e84 h1:4hRoTxb43WEzuZRowqo83i94xLt8LJRIVw0KUQnCTTg=
-github.com/perolo/myexcelize v1.4.2-0.20220404082214-4c978f745e84/go.mod h1:/jHiB3YEJa8uRoHiEfocjtKRAR51C7/hlJYOs3BMq0c=
+github.com/perolo/jira-scripts v0.0.0-20220411180542-987c6aabe088 h1:/eZnsFgfDsL5++i/023dV0TBWlYvs3nE20rSSo1Im6E=
+github.com/perolo/jira-scripts v0.0.0-20220411180542-987c6aabe088/go.mod h1:Gwi/TJ96rQOwGaYNChyYjp6rkgVWWyUlwjjCUsj8wRQ=
+github.com/perolo/myexcelize v1.4.2-0.20220404083812-f49112898c31 h1:+WdJfBjc7fZAB4qtMofZ4oI0BDV1YQ3cUqnKL5xu2Rw=
+github.com/perolo/myexcelize v1.4.2-0.20220404083812-f49112898c31/go.mod h1:/jHiB3YEJa8uRoHiEfocjtKRAR51C7/hlJYOs3BMq0c=
 github.com/perolo/sonarqube-client v0.0.0-20190114115011-bbf950cbf60b h1:Zy7Go5htkFJtJ4n1FoUghquMtwSH+agCofOEeZYqss8=
 github.com/perolo/sonarqube-client v0.0.0-20190114115011-bbf950cbf60b/go.mod h1:iUZIFA/KVuqWFlAWR5PNy2LT338/WHTG1lhSbQBtKtg=
 github.com/pkg/errors v0.9.1 h1:FEBLx1zS214owpjy7qsBeixbURkuhQAwrK5UwLGTwt4=

@@ -104,7 +104,7 @@ func AddAttachmentAndUpload(confluence *client.ConfluenceClient, copt client.Ope
 	//TODO Refactor to simplify, why copt?
 	results := confluence.SearchPages(copt.Title, copt.SpaceKey)
 	if results.Size == 1 {
-		attId, _, err := confluence.GetPageAttachmentById(results.Results[0].ID, attname)
+		attId, _, err := confluence.GetPageAttachmentByID(results.Results[0].ID, attname)
 		if err != nil {
 			if attId != nil && attId.Size == 0 {
 				_, _, err = confluence.AddAttachment(results.Results[0].ID, attname, fname, comment)
@@ -131,7 +131,7 @@ func DownloadAttachment(confluence *client.ConfluenceClient, copt client.Operati
 	//TODO Refactor to simplify, why copt?
 	results := confluence.SearchPages(copt.Title, copt.SpaceKey)
 	if results.Size == 1 {
-		attId, data, err := confluence.GetPageAttachmentById(results.Results[0].ID, attname)
+		attId, data, err := confluence.GetPageAttachmentByID(results.Results[0].ID, attname)
 		if err == nil {
 			fmt.Printf("Attid: %v, content: %s", attId.Size, data)
 		}
