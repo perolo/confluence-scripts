@@ -6,7 +6,7 @@ import (
 )
 
 func main() {
-	propPtr := flag.String("prop", "confluence.properties", "a string")
+	propPtr := flag.String("prop", "jira.properties", "a string")
 
 	personalspacesreport.PersonalSpaceReport(*propPtr)
 }
