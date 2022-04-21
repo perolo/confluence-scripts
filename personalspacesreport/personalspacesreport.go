@@ -14,16 +14,6 @@ import (
 	"time"
 )
 
-// Contains tells whether a contains x.
-func Contains(a []string, x string) bool {
-	for _, n := range a {
-		if x == n {
-			return true
-		}
-	}
-	return false
-}
-
 type ReportConfig struct {
 	ConfHost  string `properties:"confhost"`
 	ConfUser  string `properties:"confuser"`

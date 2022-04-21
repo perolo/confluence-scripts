@@ -29,12 +29,14 @@ github.com/perolo/ad-utils v0.0.0-20220412081416-aef9a45b595b h1:fijhgaamdLgnZ/U
 github.com/perolo/ad-utils v0.0.0-20220412081416-aef9a45b595b/go.mod h1:+YjYhrxcxANc1F9XrAvgLMFLwbmniB3rLOXqC+lQMO4=
 github.com/perolo/confluence-client v0.0.0-20220408191902-81a41e5cb047 h1:gOlfmq5h/Fu6KFqx1Hwdjs/Zwu8yfasKfeTFgrZPyzc=
 github.com/perolo/confluence-client v0.0.0-20220408191902-81a41e5cb047/go.mod h1:guc/tykEIQ9iuQNfa8j6v9iMGBgHpFCUfkdjL/p2hpA=
-github.com/perolo/confluence-go-api v1.3.1-0.20220418074001-d5d4f4e1f920 h1:4GM+ohrLiRjuTsJgUPTQuUHILjUm5VTHQZmxxPRhAow=
-github.com/perolo/confluence-go-api v1.3.1-0.20220418074001-d5d4f4e1f920/go.mod h1:ev6kO5aYFzh6vZntFzdY6Lc/TchtjHOVo7ep+W13Fug=
+github.com/perolo/confluence-go-api v1.3.1-0.20220419174833-1fc79fcdae5e h1:RVTWiaxnZn1tffRyPhHDiC6SMPEAA0enSjBaw2Lw2P0=
+github.com/perolo/confluence-go-api v1.3.1-0.20220419174833-1fc79fcdae5e/go.mod h1:yn4xTWku7OGdkFp9MsPRJRZ+HNCh0bq3jO8vVy3yoF4=
 github.com/perolo/excel-utils v0.0.0-20220404123251-ae7963967236 h1:q+aSVOhEKXkE635/gq9vYW7BJk5gNDIE974z8vmi9Kw=
 github.com/perolo/excel-utils v0.0.0-20220404123251-ae7963967236/go.mod h1:fn3r3AS2Np7f52J8O/WhUUobsgCjuLZi+AlprqbJYRI=
 github.com/perolo/go-gitlab v0.0.0-20220412085632-ecfdd518b625 h1:qI/GMafJjjWkqIGmRK4tO4qCjuieIWIOx0Ei2SsACDs=
 github.com/perolo/go-gitlab v0.0.0-20220412085632-ecfdd518b625/go.mod h1:oNlsB4dCuIelTNiUwY1A7Oy1tZyueeL+4ggScIzNPLg=
+github.com/perolo/gojson v1.1.0 h1:gATZuqt9sfh4qHbh6tVi0zIesRzR1qLqJJEaSA37ARQ=
+github.com/perolo/gojson v1.1.0/go.mod h1:rR9R2kMXD7X5nYLK/T3fvBH1z6CLBV0ELiWyq+s1yLo=
 github.com/perolo/jira-client v0.0.0-20220410122149-d2c3be3e4688 h1:A4OXkasloNvk4BD/iPM1MOdW8nNNvN6pBlHmTYKfv00=
 github.com/perolo/jira-client v0.0.0-20220410122149-d2c3be3e4688/go.mod h1:/yREdu37n4JNI0KXST8PyWQjE46Iy/bB6EexMuj4pkk=
 github.com/perolo/jira-scripts v0.0.0-20220411180542-987c6aabe088 h1:/eZnsFgfDsL5++i/023dV0TBWlYvs3nE20rSSo1Im6E=
@@ -84,7 +86,10 @@ google.golang.org/appengine v1.3.0 h1:FBSsiFRMz3LBeXIomRnVzrQwSDj4ibvcRexLG0LZGQ
 google.golang.org/appengine v1.3.0/go.mod h1:xpcJRLb0r/rnEns0DIKYYv+WjYCduHsrkT7/EB5XEv4=
 gopkg.in/asn1-ber.v1 v1.0.0-20181015200546-f715ec2f112d h1:TxyelI5cVkbREznMhfzycHdkp5cLA7DpE+GKjSslYhM=
 gopkg.in/asn1-ber.v1 v1.0.0-20181015200546-f715ec2f112d/go.mod h1:cuepJuh7vyXfUyUwEgHQXw849cJrilpS5NeIjOWESAw=
+gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405 h1:yhCVgyC4o1eVCa2tZl7eS0r+SDo693bJlVdllGtEeKM=
 gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405/go.mod h1:Co6ibVJAznAaIkqp8huTwlJQCZ016jof/cbN4VW5Yz0=
 gopkg.in/ldap.v2 v2.5.1 h1:wiu0okdNfjlBzg6UWvd1Hn8Y+Ux17/u/4nlk4CQr6tU=
+gopkg.in/yaml.v2 v2.4.0 h1:D8xgwECY7CYvx+Y2n4sBz93Jn9JRvxdiyyo8CTfuKaY=
+gopkg.in/yaml.v2 v2.4.0/go.mod h1:RDklbk79AGWmwhnvt/jBztapEOGDOx6ZbXqjP6csGnQ=
 gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c h1:dUUwHk2QECo/6vqA44rthZ8ie2QXMNeKRTHCNY2nXvo=
 gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c/go.mod h1:K4uyk7z7BCEPqu6E+C64Yfv1cQ7kz7rIZviUmN+EgEM=
