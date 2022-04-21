@@ -25,7 +25,6 @@ require (
 	github.com/hashicorp/go-retryablehttp v0.6.8 // indirect
 	github.com/magefile/mage v1.13.0 // indirect
 	github.com/mohae/deepcopy v0.0.0-20170929034955-c48cc78d4826 // indirect
-	github.com/perolo/gojson v1.1.0 // indirect
 	github.com/perolo/jira-client v0.0.0-20220410122149-d2c3be3e4688 // indirect
 	github.com/perolo/ldap.v2 v0.0.0-20220412075522-5a98471c017d // indirect
 	github.com/perolo/myexcelize v1.4.2-0.20220404083812-f49112898c31 // indirect
@@ -41,5 +40,4 @@ require (
 	golang.org/x/time v0.0.0-20191024005414-555d28b269f0 // indirect
 	google.golang.org/appengine v1.3.0 // indirect
 	gopkg.in/asn1-ber.v1 v1.0.0-20181015200546-f715ec2f112d // indirect
-	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
