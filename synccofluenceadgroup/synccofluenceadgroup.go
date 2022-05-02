@@ -8,7 +8,7 @@ import (
 	"github.com/perolo/ad-utils"
 	"github.com/perolo/confluence-client/client"
 	"github.com/perolo/confluence-scripts/utilities"
-	"github.com/perolo/excel-utils"
+	"github.com/perolo/excellogger"
 	"log"
 	"os"
 	"path/filepath"
@@ -44,49 +44,49 @@ type Config struct {
 
 func initReport(cfg Config) {
 	if cfg.Report {
-		excelutils.NewFile()
-		excelutils.SetCellFontHeader()
-		excelutils.WiteCellln("Introduction")
-		excelutils.WiteCellln("Please Do not edit this page!")
-		excelutils.WiteCellln("This page is created by the projectreport script: github.com\\perolo\\confluence-scripts\\SyncADGroup")
+		excellogger.NewFile(nil)
+		excellogger.SetCellFontHeader()
+		excellogger.WiteCellln("Introduction")
+		excellogger.WiteCellln("Please Do not edit this page!")
+		excellogger.WiteCellln("This page is created by the projectreport script: github.com\\perolo\\confluence-scripts\\SyncADGroup")
 		t := time.Now()
-		excelutils.WiteCellln("Created by: " + cfg.ConfUser + " : " + t.Format(time.RFC3339))
-		excelutils.WiteCellln("")
-		excelutils.WiteCellln("The Report Function shows:")
-		excelutils.WiteCellln("   AdNames - Name and user found in AD Group")
-		excelutils.WiteCellln("   JIRA Users - Name and user found in JIRA Group")
-		excelutils.WiteCellln("   Not in AD - Users in the Local Group not found in the AD")
-		excelutils.WiteCellln("   Not in JIRA - Users in the AD not found in the JIRA Group")
-		excelutils.WiteCellln("   AD Errors - Internal error when searching for user in AD")
-		excelutils.WiteCellln("")
-		excelutils.SetCellFontHeader2()
-		excelutils.WiteCellln("Group Mapping")
-		excelutils.WriteColumnsHeaderln([]string{"AD Group", "Local group", "Add", "Remove", "Ad Count", "Local Count"})
+		excellogger.WiteCellln("Created by: " + cfg.ConfUser + " : " + t.Format(time.RFC3339))
+		excellogger.WiteCellln("")
+		excellogger.WiteCellln("The Report Function shows:")
+		excellogger.WiteCellln("   AdNames - Name and user found in AD Group")
+		excellogger.WiteCellln("   JIRA Users - Name and user found in JIRA Group")
+		excellogger.WiteCellln("   Not in AD - Users in the Local Group not found in the AD")
+		excellogger.WiteCellln("   Not in JIRA - Users in the AD not found in the JIRA Group")
+		excellogger.WiteCellln("   AD Errors - Internal error when searching for user in AD")
+		excellogger.WiteCellln("")
+		excellogger.SetCellFontHeader2()
+		excellogger.WiteCellln("Group Mapping")
+		excellogger.WriteColumnsHeaderln([]string{"AD Group", "Local group", "Add", "Remove", "Ad Count", "Local Count"})
 		if cfg.Simple {
-			excelutils.WriteColumnsln([]string{cfg.AdGroup, cfg.Localgroup, strconv.FormatBool(cfg.AddOperation), strconv.FormatBool(cfg.RemoveOperation)})
+			excellogger.WriteColumnsln([]string{cfg.AdGroup, cfg.Localgroup, strconv.FormatBool(cfg.AddOperation), strconv.FormatBool(cfg.RemoveOperation)})
 		} else {
 			for _, syn := range GroupSyncs {
 				if syn.InConfluence {
-					excelutils.WriteColumnsln([]string{syn.AdGroup, syn.LocalGroup, excelutils.BoolToEmoji(syn.DoAdd), excelutils.BoolToEmoji(syn.DoRemove)})
+					excellogger.WriteColumnsln([]string{syn.AdGroup, syn.LocalGroup, excellogger.BoolToEmoji(syn.DoAdd), excellogger.BoolToEmoji(syn.DoRemove)})
 				}
 			}
 		}
-		excelutils.WiteCellln("")
-		excelutils.SetCellFontHeader2()
-		excelutils.WiteCellln("Report")
-		excelutils.AutoFilterStart()
+		excellogger.WiteCellln("")
+		excellogger.SetCellFontHeader2()
+		excellogger.WiteCellln("Report")
+		excellogger.AutoFilterStart()
 		var headers = []string{"Report Function", "AD group", "Local Group", "Name", "Uname", "Mail", "Error", "DN"}
-		excelutils.WriteColumnsHeaderln(headers)
+		excellogger.WriteColumnsHeaderln(headers)
 	}
 }
 
 func endReport(cfg Config) error {
 	if cfg.Report {
 		file := fmt.Sprintf(cfg.File, "-Confluence")
-		excelutils.SetAutoColWidth()
-		excelutils.SetColWidth("A", "A", 50)
-		excelutils.AutoFilterEnd()
-		excelutils.SaveAs(file)
+		excellogger.SetAutoColWidth()
+		excellogger.SetColWidth("A", "A", 50)
+		excellogger.AutoFilterEnd()
+		excellogger.SaveAs(file)
 		if cfg.ConfUpload {
 			var config = client.ConfluenceConfig{}
 			var copt client.OperationOptions
@@ -146,10 +146,10 @@ func ConfluenceSyncAdGroup(propPtr string) {
 				cfg.AutoDisable = syn.AutoDisable
 				adCount, groupCount = SyncGroupInTool(cfg, toolClient)
 				// Dirty Solution - find a better?
-				excelutils.SetCell(fmt.Sprintf("%v", adCount), 5, x)
-				excelutils.SetCell(fmt.Sprintf("%v", groupCount), 6, x)
+				excellogger.SetCell(fmt.Sprintf("%v", adCount), 5, x)
+				excellogger.SetCell(fmt.Sprintf("%v", groupCount), 6, x)
 				if adCount == groupCount {
-					excelutils.SetCellStyleColor("green")
+					excellogger.SetCellStyleColor("green")
 				}
 			}
 			x++
@@ -191,7 +191,7 @@ func SyncGroupInTool(cfg Config, client *client.ConfluenceClient) (adcount int, 
 		if !cfg.Limited {
 			for _, adu := range adUnames {
 				var row = []string{"AD Names", cfg.AdGroup, cfg.Localgroup, adu.Name, adu.Uname, adu.Mail, adu.Err, adu.DN}
-				excelutils.WriteColumnsln(row)
+				excellogger.WriteColumnsln(row)
 			}
 		}
 		adcount = len(adUnames)
@@ -202,7 +202,7 @@ func SyncGroupInTool(cfg Config, client *client.ConfluenceClient) (adcount int, 
 			if !cfg.Limited {
 				for _, tgm := range toolGroupMemberNames {
 					var row = []string{"Confluence Users", cfg.AdGroup, cfg.Localgroup, tgm.Name, tgm.Uname, tgm.Mail, tgm.Err, tgm.DN}
-					excelutils.WriteColumnsln(row)
+					excellogger.WriteColumnsln(row)
 				}
 			}
 		}
@@ -222,7 +222,7 @@ func SyncGroupInTool(cfg Config, client *client.ConfluenceClient) (adcount int, 
 		if cfg.Report {
 			for _, nji := range notInTool {
 				var row = []string{"AD group users not found in Tool user group", cfg.AdGroup, cfg.Localgroup, nji.Name, nji.Uname, nji.Mail, nji.Err, nji.DN}
-				excelutils.WriteColumnsln(row)
+				excellogger.WriteColumnsln(row)
 			}
 		}
 		notInAD := adutils.Difference2(toolGroupMemberNames, adUnames)
@@ -272,7 +272,7 @@ func SyncGroupInTool(cfg Config, client *client.ConfluenceClient) (adcount int, 
 								nad.Err = edn[0].Err
 								for _, ldn := range edn {
 									var row2 = []string{"Tool user group member not found in AD group (multiple?)", cfg.AdGroup, cfg.Localgroup, nad.Name, nad.Uname, ldn.Mail, ldn.Err, ldn.DN}
-									excelutils.WriteColumnsln(row2)
+									excellogger.WriteColumnsln(row2)
 								}
 							} else {
 
@@ -283,7 +283,7 @@ func SyncGroupInTool(cfg Config, client *client.ConfluenceClient) (adcount int, 
 
 				}
 				var row = []string{"Tool user group member not found in AD group", cfg.AdGroup, cfg.Localgroup, nad.Name, nad.Uname, nad.Mail, nad.Err, nad.DN}
-				excelutils.WriteColumnsln(row)
+				excellogger.WriteColumnsln(row)
 			}
 		}
 		if cfg.AddOperation {

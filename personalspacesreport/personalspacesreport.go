@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"github.com/magiconair/properties"
 	goconfluence "github.com/perolo/confluence-go-api"
-	"github.com/perolo/excel-utils"
+	"github.com/perolo/excellogger"
 	"golang.org/x/exp/slices"
 	"log"
 	"os"
@@ -68,44 +68,44 @@ func CreatePersonalSpacesReport(cfg ReportConfig) {
 	}
 	//	confClient.Debug = true
 
-	excelutils.NewFile()
+	excellogger.NewFile(nil)
 
-	excelutils.SetCellFontHeader()
-	excelutils.WiteCellln("Introduction")
-	excelutils.WiteCellln("Please Do not edit this page!")
-	excelutils.WiteCellln("This page is created by the User Report script: " + "https://github.com/perolo/confluence-scripts" + "/" + "PersonalSpacesReport")
+	excellogger.SetCellFontHeader()
+	excellogger.WiteCellln("Introduction")
+	excellogger.WiteCellln("Please Do not edit this page!")
+	excellogger.WiteCellln("This page is created by the User Report script: " + "https://github.com/perolo/confluence-scripts" + "/" + "PersonalSpacesReport")
 	t := time.Now()
-	excelutils.WiteCellln("Created by: " + cfg.ConfUser + " : " + t.Format(time.RFC3339))
-	excelutils.WiteCellln("")
+	excellogger.WiteCellln("Created by: " + cfg.ConfUser + " : " + t.Format(time.RFC3339))
+	excellogger.WiteCellln("")
 
-	excelutils.SetCellFontHeader2()
-	excelutils.WiteCellln("Users and Permissions")
-	excelutils.NextLine()
-	excelutils.AutoFilterStart()
-	excelutils.SetTableHeader()
-	excelutils.WiteCell("Space Name")
-	excelutils.SetTableHeader()
-	excelutils.NextCol()
-	excelutils.SetTableHeader()
-	excelutils.WiteCell("Space Key")
-	excelutils.NextCol()
-	excelutils.SetTableHeader()
-	excelutils.WiteCell("Type")
-	excelutils.NextCol()
-	excelutils.SetTableHeader()
-	excelutils.WiteCell("Name")
-	excelutils.NextCol()
+	excellogger.SetCellFontHeader2()
+	excellogger.WiteCellln("Users and Permissions")
+	excellogger.NextLine()
+	excellogger.AutoFilterStart()
+	excellogger.SetTableHeader()
+	excellogger.WiteCell("Space Name")
+	excellogger.SetTableHeader()
+	excellogger.NextCol()
+	excellogger.SetTableHeader()
+	excellogger.WiteCell("Space Key")
+	excellogger.NextCol()
+	excellogger.SetTableHeader()
+	excellogger.WiteCell("Type")
+	excellogger.NextCol()
+	excellogger.SetTableHeader()
+	excellogger.WiteCell("Name")
+	excellogger.NextCol()
 	/*
-		excelutils.SetTableHeader()
-		excelutils.WiteCell("DN")
-		excelutils.NextCol()
-		excelutils.SetTableHeader()
-		excelutils.WiteCell("Mail")
-		excelutils.NextCol()
-		excelutils.SetTableHeader()
-		excelutils.WiteCell("Comment")
-		excelutils.NextCol()
-		excelutils.NextLine()
+		excellogger.SetTableHeader()
+		excellogger.WiteCell("DN")
+		excellogger.NextCol()
+		excellogger.SetTableHeader()
+		excellogger.WiteCell("Mail")
+		excellogger.NextCol()
+		excellogger.SetTableHeader()
+		excellogger.WiteCell("Comment")
+		excellogger.NextCol()
+		excellogger.NextLine()
 	*/
 	noSpaces := 0
 	spstart := 0
@@ -114,14 +114,14 @@ func CreatePersonalSpacesReport(cfg ReportConfig) {
 	var spaces *goconfluence.AllSpaces
 	types, err := confClient.GetPermissionTypes()
 	for _, t := range *types {
-		excelutils.SetTableHeader()
-		excelutils.WiteCell(t)
-		excelutils.NextCol()
+		excellogger.SetTableHeader()
+		excellogger.WiteCell(t)
+		excellogger.NextCol()
 	}
 	if err != nil {
 		log.Fatal(err)
 	}
-	excelutils.NextLine()
+	excellogger.NextLine()
 
 	for spcont {
 		//spopt := client.SpaceOptions{Start: spstart, Limit: spincrease, Type: "personal", Status: "current"}
@@ -141,47 +141,47 @@ func CreatePersonalSpacesReport(cfg ReportConfig) {
 				if err2 != nil {
 					log.Fatal(err2)
 				}
-				excelutils.NextCol()
+				excellogger.NextCol()
 				for _, user := range users.Users {
 					permissions, _ := confClient.GetUserPermissionsForSpace(space.Key, user)
-					excelutils.ResetCol()
-					excelutils.WiteCellnc(space.Name)
-					excelutils.WiteCellnc(space.Key)
-					excelutils.WiteCellnc("User")
-					excelutils.WiteCellnc(user)
+					excellogger.ResetCol()
+					excellogger.WiteCellnc(space.Name)
+					excellogger.WiteCellnc(space.Key)
+					excellogger.WiteCellnc("User")
+					excellogger.WiteCellnc(user)
 					for _, t := range *types {
 						if slices.Contains(permissions.Permissions, t) {
-							excelutils.WiteCellnc("x")
+							excellogger.WiteCellnc("x")
 						} else {
-							excelutils.WiteCellnc("-")
+							excellogger.WiteCellnc("-")
 						}
 					}
 
-					excelutils.NextLine()
+					excellogger.NextLine()
 					/*
 						if Contains(permissions.Permissions, "SETPAGEPERMISSIONS") {
 							_, err := adutils.GetActiveUserDN(user, cfg.BaseDN)
 							if err == nil {
-								//excelutils.WiteCellnc(dn.DN)
-								//excelutils.WiteCellnc(dn.Mail)
-								//excelutils.WiteCellnc("")
+								//excellogger.WiteCellnc(dn.DN)
+								//excellogger.WiteCellnc(dn.Mail)
+								//excellogger.WiteCellnc("")
 							} else {
-								excelutils.ResetCol()
-								excelutils.WiteCellnc(space.Name)
-								excelutils.WiteCellnc(space.Key)
-								excelutils.WiteCellnc("User")
-								excelutils.WiteCellnc(user)
+								excellogger.ResetCol()
+								excellogger.WiteCellnc(space.Name)
+								excellogger.WiteCellnc(space.Key)
+								excellogger.WiteCellnc("User")
+								excellogger.WiteCellnc(user)
 								udn, err := adutils.GetAllUserDN(user, cfg.BaseDN)
 								if err == nil {
-									excelutils.WiteCellnc(udn.DN)
-									excelutils.WiteCellnc(udn.Mail)
-									excelutils.WiteCellnc("Deactivated!")
+									excellogger.WiteCellnc(udn.DN)
+									excellogger.WiteCellnc(udn.Mail)
+									excellogger.WiteCellnc("Deactivated!")
 								} else {
-									excelutils.WiteCellnc("")
-									excelutils.WiteCellnc("")
-									excelutils.WiteCellnc("Not Found!")
+									excellogger.WiteCellnc("")
+									excellogger.WiteCellnc("")
+									excellogger.WiteCellnc("Not Found!")
 								}
-								excelutils.NextLine()
+								excellogger.NextLine()
 							}
 						}*/
 				}
@@ -198,12 +198,12 @@ func CreatePersonalSpacesReport(cfg ReportConfig) {
 			spstart = spstart + spincrease
 		}
 	}
-	excelutils.SetAutoColWidth()
-	excelutils.AutoFilterEnd()
+	excellogger.SetAutoColWidth()
+	excellogger.AutoFilterEnd()
 
-	excelutils.SetColWidth("A", "A", 60)
+	excellogger.SetColWidth("A", "A", 60)
 	// Save xlsx file by the given path.
-	excelutils.SaveAs(cfg.File)
+	excellogger.SaveAs(cfg.File)
 	if cfg.Report {
 
 		file, err3 := os.Open(cfg.File)

@@ -8,7 +8,7 @@ import (
 	"github.com/perolo/confluence-scripts/schedulerutil"
 	"github.com/perolo/confluence-scripts/utilities"
 	"github.com/perolo/confluence-scripts/utilities/searchutils"
-	"github.com/perolo/excel-utils"
+	"github.com/perolo/excellogger"
 	"log"
 	"path/filepath"
 	"time"
@@ -67,15 +67,15 @@ func SpacePermissionsReport(propPtr string) {
 
 func CreateSpacePermissionsReport(cfg ReportConfig) { //nolint:funlen
 
-	excelutils.NewFile()
+	excellogger.NewFile(nil)
 
-	excelutils.SetCellFontHeader()
-	excelutils.WiteCellln("Introduction")
-	excelutils.WiteCellln("Please Do not edit this page!")
-	excelutils.WiteCellln("This page is created by the User Report script: " + "https://github.com/perolo/confluence-scripts" + "/" + "SpacePermissionsReport")
+	excellogger.SetCellFontHeader()
+	excellogger.WiteCellln("Introduction")
+	excellogger.WiteCellln("Please Do not edit this page!")
+	excellogger.WiteCellln("This page is created by the User Report script: " + "https://github.com/perolo/confluence-scripts" + "/" + "SpacePermissionsReport")
 	t := time.Now()
-	excelutils.WiteCellln("Created by: " + cfg.ConfUser + " : " + t.Format(time.RFC3339))
-	excelutils.WiteCellln("")
+	excellogger.WiteCellln("Created by: " + cfg.ConfUser + " : " + t.Format(time.RFC3339))
+	excellogger.WiteCellln("")
 
 	var config = client.ConfluenceConfig{}
 	config.Username = cfg.ConfUser
@@ -86,30 +86,30 @@ func CreateSpacePermissionsReport(cfg ReportConfig) { //nolint:funlen
 
 	theClient := client.Client(&config)
 	types := theClient.GetPermissionTypes()
-	excelutils.SetCellFontHeader2()
-	excelutils.WiteCellln("Users and Permissions")
-	excelutils.NextLine()
-	excelutils.AutoFilterStart()
-	excelutils.SetTableHeader()
-	excelutils.WiteCellnc("Space Name")
-	excelutils.SetTableHeader()
-	excelutils.WiteCellnc("Space Owner")
-	excelutils.SetTableHeader()
-	//	excelutils.NextCol()
-	//	excelutils.SetTableHeader()
-	excelutils.WiteCellnc("Space Key")
-	//excelutils.SetCellStyleRotate()
-	//	excelutils.NextCol()
-	excelutils.SetTableHeader()
-	excelutils.WiteCellnc("Type")
-	//excelutils.SetCellStyleRotate()
-	//	excelutils.NextCol()
-	excelutils.SetTableHeader()
-	excelutils.WiteCellnc("Name")
-	//excelutils.SetCellStyleRotate()
-	//	excelutils.NextCol()
-	excelutils.SetCellStyleRotateN(len(*types))
-	excelutils.WriteColumnsln(*types)
+	excellogger.SetCellFontHeader2()
+	excellogger.WiteCellln("Users and Permissions")
+	excellogger.NextLine()
+	excellogger.AutoFilterStart()
+	excellogger.SetTableHeader()
+	excellogger.WiteCellnc("Space Name")
+	excellogger.SetTableHeader()
+	excellogger.WiteCellnc("Space Owner")
+	excellogger.SetTableHeader()
+	//	excellogger.NextCol()
+	//	excellogger.SetTableHeader()
+	excellogger.WiteCellnc("Space Key")
+	//excellogger.SetCellStyleRotate()
+	//	excellogger.NextCol()
+	excellogger.SetTableHeader()
+	excellogger.WiteCellnc("Type")
+	//excellogger.SetCellStyleRotate()
+	//	excellogger.NextCol()
+	excellogger.SetTableHeader()
+	excellogger.WiteCellnc("Name")
+	//excellogger.SetCellStyleRotate()
+	//	excellogger.NextCol()
+	excellogger.SetCellStyleRotateN(len(*types))
+	excellogger.WriteColumnsln(*types)
 	noSpaces := 0
 	spstart := 0
 	spincrease := 50
@@ -144,26 +144,26 @@ func CreateSpacePermissionsReport(cfg ReportConfig) { //nolint:funlen
 						opt.StartAt = start
 						opt.MaxResults = increase
 						groups := theClient.GetAllGroupsWithAnyPermission(space.Key, &opt)
-						excelutils.NextCol()
+						excellogger.NextCol()
 						for _, group := range groups.Groups {
-							excelutils.ResetCol()
-							excelutils.WiteCellnc(space.Name)
-							excelutils.WiteCellnc(SpaceOwner)
-							//excelutils.WiteCellnc(space.Key)
-							excelutils.WiteCellHyperLinknc(space.Key, cfg.ConfHost+"/spaces/spacepermissions.action?key="+space.Key) //https://confluence.assaabloy.net/spaces/spacepermissions.action?key=REL
-							excelutils.WiteCellnc("Group")
+							excellogger.ResetCol()
+							excellogger.WiteCellnc(space.Name)
+							excellogger.WiteCellnc(SpaceOwner)
+							//excellogger.WiteCellnc(space.Key)
+							excellogger.WiteCellHyperLinknc(space.Key, cfg.ConfHost+"/spaces/spacepermissions.action?key="+space.Key) //https://confluence.assaabloy.net/spaces/spacepermissions.action?key=REL
+							excellogger.WiteCellnc("Group")
 							permissions := theClient.GetGroupPermissionsForSpace(space.Key, group)
-							excelutils.WiteCellnc(group)
+							excellogger.WiteCellnc(group)
 							for _, atype := range *types {
 								if Contains(permissions.Permissions, atype) {
-									excelutils.SetCellStyleCenter()
-									excelutils.WiteCellnc("X")
+									excellogger.SetCellStyleCenter()
+									excellogger.WiteCellnc("X")
 								} else {
-									excelutils.SetCellStyleCenter()
-									excelutils.WiteCellnc("-")
+									excellogger.SetCellStyleCenter()
+									excellogger.WiteCellnc("-")
 								}
 							}
-							excelutils.NextLine()
+							excellogger.NextLine()
 						}
 						if groups.Total < start+increase {
 							cont = false
@@ -186,30 +186,30 @@ func CreateSpacePermissionsReport(cfg ReportConfig) { //nolint:funlen
 							users, _ = theClient.GetAllUsersWithAnyPermission(space.Key, &opt)
 						}
 						//users, err := retry(3,200, theClient.GetAllUsersWithAnyPermission(space.Key, &opt))
-						excelutils.NextCol()
+						excellogger.NextCol()
 						for _, user := range users.Users {
-							excelutils.ResetCol()
-							excelutils.WiteCellnc(space.Name)
-							excelutils.WiteCellnc(SpaceOwner)
-							//excelutils.WiteCellnc(space.Key)
-							excelutils.WiteCellHyperLinknc(space.Key, cfg.ConfHost+"/spaces/spacepermissions.action?key="+space.Key)
-							excelutils.WiteCellnc("User")
+							excellogger.ResetCol()
+							excellogger.WiteCellnc(space.Name)
+							excellogger.WiteCellnc(SpaceOwner)
+							//excellogger.WiteCellnc(space.Key)
+							excellogger.WiteCellHyperLinknc(space.Key, cfg.ConfHost+"/spaces/spacepermissions.action?key="+space.Key)
+							excellogger.WiteCellnc("User")
 							permissions, resp := theClient.GetUserPermissionsForSpace(space.Key, user)
 							if resp.StatusCode < 200 || resp.StatusCode > 300 {
 								// one restry...
 								permissions, _ = theClient.GetUserPermissionsForSpace(space.Key, user)
 							}
-							excelutils.WiteCellnc(user)
+							excellogger.WiteCellnc(user)
 							for _, atype := range *types {
 								if Contains(permissions.Permissions, atype) {
-									excelutils.SetCellStyleCenter()
-									excelutils.WiteCellnc("X")
+									excellogger.SetCellStyleCenter()
+									excellogger.WiteCellnc("X")
 								} else {
-									excelutils.SetCellStyleCenter()
-									excelutils.WiteCellnc("-")
+									excellogger.SetCellStyleCenter()
+									excellogger.WiteCellnc("-")
 								}
 							}
-							excelutils.NextLine()
+							excellogger.NextLine()
 						}
 						if users.Total < start+increase {
 							cont = false
@@ -226,12 +226,12 @@ func CreateSpacePermissionsReport(cfg ReportConfig) { //nolint:funlen
 			spstart = spstart + spincrease
 		}
 	}
-	excelutils.SetAutoColWidth()
-	excelutils.AutoFilterEnd()
+	excellogger.SetAutoColWidth()
+	excellogger.AutoFilterEnd()
 
-	excelutils.SetColWidth("A", "A", 40)
+	excellogger.SetColWidth("A", "A", 40)
 	// Save xlsx file by the given path.
-	excelutils.SaveAs(cfg.File)
+	excellogger.SaveAs(cfg.File)
 	if cfg.Report {
 		var config = client.ConfluenceConfig{}
 		var copt client.OperationOptions

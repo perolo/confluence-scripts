@@ -5,7 +5,6 @@ import (
 	"github.com/magiconair/properties"
 	"github.com/perolo/confluence-client/client"
 	"github.com/perolo/confluence-scripts/utilities"
-	"github.com/perolo/excel-utils"
 	"github.com/perolo/go-gitlab"
 	"github.com/perolo/jira-scripts/jirautils"
 	"log"
@@ -51,6 +50,12 @@ type MergeData struct {
 type ContributorData struct {
 	USer          string `json:"user"`
 	Contributions int    `json:"contributions"`
+}
+
+func check(e error) {
+	if e != nil {
+		panic(e)
+	}
 }
 
 func GitLabMergeReport(propPtr string) {
@@ -115,7 +120,7 @@ func createProjectReport(confluence *client.ConfluenceClient, data Data, copt cl
 	for cont {
 		opt2.Page = page
 		openmerges, _, err2 := gitlabclient.MergeRequests.ListProjectMergeRequests(cfg.GitProjId, &opt2, nil)
-		excelutils.Check(err2)
+		check(err2)
 
 		for _, merge := range openmerges {
 

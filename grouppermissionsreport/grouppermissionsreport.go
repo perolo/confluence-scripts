@@ -7,7 +7,7 @@ import (
 	"github.com/perolo/confluence-client/client"
 	"github.com/perolo/confluence-scripts/schedulerutil"
 	"github.com/perolo/confluence-scripts/utilities"
-	"github.com/perolo/excel-utils"
+	"github.com/perolo/excellogger"
 	"log"
 	"path/filepath"
 	"time"
@@ -71,15 +71,15 @@ func SpacePermissionsReport(propPtr string) {
 
 func CreateGroupPermissionsReport(cfg ReportConfig) {
 
-	excelutils.NewFile()
+	excellogger.NewFile(nil)
 
-	excelutils.SetCellFontHeader()
-	excelutils.WiteCellln("Introduction")
-	excelutils.WiteCellln("Please Do not edit this page!")
-	excelutils.WiteCellln("This page is created by the User Report script: " + "https://github.com/perolo/perolo/confluence-scripts" + "/" + "SpacePermissionsReport")
+	excellogger.SetCellFontHeader()
+	excellogger.WiteCellln("Introduction")
+	excellogger.WiteCellln("Please Do not edit this page!")
+	excellogger.WiteCellln("This page is created by the User Report script: " + "https://github.com/perolo/perolo/confluence-scripts" + "/" + "SpacePermissionsReport")
 	t := time.Now()
-	excelutils.WiteCellln("Created by: " + cfg.ConfUser + " : " + t.Format(time.RFC3339))
-	excelutils.WiteCellln("")
+	excellogger.WiteCellln("Created by: " + cfg.ConfUser + " : " + t.Format(time.RFC3339))
+	excellogger.WiteCellln("")
 
 	var config = client.ConfluenceConfig{}
 	config.Username = cfg.ConfUser
@@ -90,28 +90,28 @@ func CreateGroupPermissionsReport(cfg ReportConfig) {
 
 	theClient := client.Client(&config)
 	types := theClient.GetPermissionTypes()
-	excelutils.SetCellFontHeader2()
-	excelutils.WiteCellln("Users and Permissions for group: " + cfg.Group)
-	excelutils.NextLine()
-	excelutils.AutoFilterStart()
-	excelutils.SetTableHeader()
-	excelutils.WiteCell("Space Name")
-	excelutils.SetTableHeader()
-	excelutils.NextCol()
-	excelutils.SetTableHeader()
-	excelutils.WiteCell("Space Key")
-	//excelutils.SetCellStyleRotate()
-	excelutils.NextCol()
-	excelutils.SetTableHeader()
-	excelutils.WiteCell("Type")
-	//excelutils.SetCellStyleRotate()
-	excelutils.NextCol()
-	excelutils.SetTableHeader()
-	excelutils.WiteCell("Name")
-	//excelutils.SetCellStyleRotate()
-	excelutils.NextCol()
-	excelutils.SetCellStyleRotateN(len(*types))
-	excelutils.WriteColumnsln(*types)
+	excellogger.SetCellFontHeader2()
+	excellogger.WiteCellln("Users and Permissions for group: " + cfg.Group)
+	excellogger.NextLine()
+	excellogger.AutoFilterStart()
+	excellogger.SetTableHeader()
+	excellogger.WiteCell("Space Name")
+	excellogger.SetTableHeader()
+	excellogger.NextCol()
+	excellogger.SetTableHeader()
+	excellogger.WiteCell("Space Key")
+	//excellogger.SetCellStyleRotate()
+	excellogger.NextCol()
+	excellogger.SetTableHeader()
+	excellogger.WiteCell("Type")
+	//excellogger.SetCellStyleRotate()
+	excellogger.NextCol()
+	excellogger.SetTableHeader()
+	excellogger.WiteCell("Name")
+	//excellogger.SetCellStyleRotate()
+	excellogger.NextCol()
+	excellogger.SetCellStyleRotateN(len(*types))
+	excellogger.WriteColumnsln(*types)
 
 	cont := true
 	start := 0
@@ -129,22 +129,22 @@ func CreateGroupPermissionsReport(cfg ReportConfig) {
 				spaces, _ := theClient.GetAllSpacesWithPermissions(member.Name, &client.GetGroupMembersOptions{StartAt: start, MaxResults: max, ShowExtendedDetails: true})
 				for _, space := range spaces.Spaces {
 					fmt.Printf("User: %s Space: %s Permissions: %s \n", member.Name, space.Name, space.Permissions)
-					excelutils.ResetCol()
-					excelutils.WiteCellnc(space.Name)
-					//excelutils.WiteCellnc(space.Key)
-					excelutils.WiteCellHyperLinknc(space.Key, cfg.ConfHost+"/spaces/spacepermissions.action?key="+space.Key)
-					excelutils.WiteCellnc("User")
-					excelutils.WiteCellnc(member.Name)
+					excellogger.ResetCol()
+					excellogger.WiteCellnc(space.Name)
+					//excellogger.WiteCellnc(space.Key)
+					excellogger.WiteCellHyperLinknc(space.Key, cfg.ConfHost+"/spaces/spacepermissions.action?key="+space.Key)
+					excellogger.WiteCellnc("User")
+					excellogger.WiteCellnc(member.Name)
 					for _, atype := range *types {
 						if Contains(space.Permissions, atype) {
-							excelutils.SetCellStyleCenter()
-							excelutils.WiteCellnc("X")
+							excellogger.SetCellStyleCenter()
+							excellogger.WiteCellnc("X")
 						} else {
-							excelutils.SetCellStyleCenter()
-							excelutils.WiteCellnc("-")
+							excellogger.SetCellStyleCenter()
+							excellogger.WiteCellnc("-")
 						}
 					}
-					excelutils.NextLine()
+					excellogger.NextLine()
 				}
 				if len(spaces.Spaces) != spmax {
 					spcont = false
@@ -162,12 +162,12 @@ func CreateGroupPermissionsReport(cfg ReportConfig) {
 		}
 	}
 
-	excelutils.SetAutoColWidth()
-	excelutils.AutoFilterEnd()
+	excellogger.SetAutoColWidth()
+	excellogger.AutoFilterEnd()
 
-	excelutils.SetColWidth("A", "A", 40)
+	excellogger.SetColWidth("A", "A", 40)
 	// Save xlsx file by the given path.
-	excelutils.SaveAs(cfg.File)
+	excellogger.SaveAs(cfg.File)
 	if cfg.Report {
 		var config = client.ConfluenceConfig{}
 		var copt client.OperationOptions
