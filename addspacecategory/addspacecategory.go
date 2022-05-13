@@ -63,7 +63,7 @@ func AddSpaceCategory(propPtr string) {
 		}
 		start = start + increase
 		//var otherInc int64 = int64((increase))
-		if int(spaces.Size) <= increase { //nolint:unconvert
+		if int(spaces.Size) <= increase {
 			cont = false
 		}
 	}
