@@ -6,6 +6,8 @@ replace github.com/perolo/confluence-scripts => c:\Users\pereo\Source\go\src\git
 
 require github.com/perolo/confluence-scripts v0.0.0-00010101000000-000000000000
 
+require gopkg.in/yaml.v3 v3.0.0
+
 require (
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/magefile/mage v1.13.0 // indirect
