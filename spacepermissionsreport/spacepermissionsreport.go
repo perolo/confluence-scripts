@@ -3,15 +3,13 @@ package spacepermissionsreport
 import (
 	"flag"
 	"fmt"
-	"github.com/magiconair/properties"
-	"github.com/perolo/confluence-client/client"
-	"github.com/perolo/confluence-scripts/schedulerutil"
-	"github.com/perolo/confluence-scripts/utilities"
-	"github.com/perolo/confluence-scripts/utilities/searchutils"
-	"github.com/perolo/excellogger"
 	"log"
-	"path/filepath"
 	"time"
+
+	goconfluence "github.com/perolo/confluence-go-api"
+
+	"github.com/magiconair/properties"
+	"github.com/perolo/excellogger"
 )
 
 // Contains tells whether a contains x.
@@ -28,6 +26,7 @@ type ReportConfig struct {
 	ConfHost      string `properties:"confhost"`
 	ConfUser      string `properties:"confuser"`
 	ConfPass      string `properties:"confpass"`
+	ConfToken     string `properties:"conftoken"`
 	UseToken      bool   `properties:"usetoken"`
 	Groups        bool   `properties:"groups"`
 	Users         bool   `properties:"users"`
@@ -35,7 +34,9 @@ type ReportConfig struct {
 	File          string `properties:"file"`
 	Simple        bool   `properties:"simple"`
 	Report        bool   `properties:"report"`
-	Reset         bool   `properties:"reset"`
+	//	Reset         bool   `properties:"reset"`
+	Space         string `properties:"space"`
+	AncestorTitle string `properties:"ancestortitle"`
 }
 
 func SpacePermissionsReport(propPtr string) {
@@ -55,12 +56,12 @@ func SpacePermissionsReport(propPtr string) {
 	} else {
 		reportBase := cfg.File
 		for _, category := range Categories {
-			if schedulerutil.CheckScheduleDetail("SpacePermissionsReport-"+category, 7*time.Hour*24, cfg.Reset, schedulerutil.DummyFunc, "jiracategory.properties") {
-				cfg.SpaceCategory = category
-				cfg.File = fmt.Sprintf(reportBase, "-"+category)
-				fmt.Printf("Category: %s \n", category)
-				CreateSpacePermissionsReport(cfg)
-			}
+			//			if schedulerutil.CheckScheduleDetail("SpacePermissionsReport-"+category, 7*time.Hour*24, cfg.Reset, schedulerutil.DummyFunc, "jiracategory.properties") {
+			cfg.SpaceCategory = category
+			cfg.File = fmt.Sprintf(reportBase, "-"+category)
+			fmt.Printf("Category: %s \n", category)
+			CreateSpacePermissionsReport(cfg)
+			//			}
 		}
 	}
 }
@@ -77,15 +78,33 @@ func CreateSpacePermissionsReport(cfg ReportConfig) { //nolint:funlen
 	excellogger.WiteCellln("Created by: " + cfg.ConfUser + " : " + t.Format(time.RFC3339))
 	excellogger.WiteCellln("")
 
-	var config = client.ConfluenceConfig{}
-	config.Username = cfg.ConfUser
-	config.Password = cfg.ConfPass
-	config.UseToken = cfg.UseToken
-	config.URL = cfg.ConfHost
-	config.Debug = false
+	/*
+		var config = client.ConfluenceConfig{}
+		config.Username = cfg.ConfUser
+		config.Password = cfg.ConfPass
+		config.UseToken = cfg.UseToken
+		config.URL = cfg.ConfHost
+		config.Debug = false
 
-	theClient := client.Client(&config)
-	types := theClient.GetPermissionTypes()
+		theClient := client.Client(&config)
+	*/
+
+	var confluence *goconfluence.API
+	var err error
+	if cfg.UseToken {
+		confluence, err = goconfluence.NewAPI(cfg.ConfHost, "", cfg.ConfToken)
+	} else {
+		confluence, err = goconfluence.NewAPI(cfg.ConfHost, cfg.ConfUser, cfg.ConfPass)
+	}
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	types, err2 := confluence.GetPermissionTypes()
+	if err2 != nil {
+		log.Fatal(err2)
+	}
+
 	excellogger.SetCellFontHeader2()
 	excellogger.WiteCellln("Users and Permissions")
 	excellogger.NextLine()
@@ -114,26 +133,27 @@ func CreateSpacePermissionsReport(cfg ReportConfig) { //nolint:funlen
 	spstart := 0
 	spincrease := 50
 	spcont := true
-	var spaces *client.ConfluenceSpaceResult
+	//var spaces *confluence.Search
 	for spcont {
-		spopt := client.SpaceOptions{Start: spstart, Limit: spincrease, Label: cfg.SpaceCategory, Type: "global", Status: "current"}
-		spaces, _ = theClient.GetSpaces(&spopt)
-		opt := client.PaginationOptions{}
+		spopt := goconfluence.AllSpacesQuery{Start: spstart, Limit: spincrease, Label: cfg.SpaceCategory, Type: "global", Status: "current"}
+		spaces, _ := confluence.GetAllSpaces(spopt)
+		opt := goconfluence.PaginationOptions{}
 		for _, space := range spaces.Results {
 			if space.Type == "global" {
 				noSpaces++
 				fmt.Printf("Space: %s \n", space.Name)
 				SpaceOwner := ""
-				if cfg.SpaceCategory == "demo" {
-					found, page := searchutils.SearchSpacePage(theClient, space.Key)
-					if found {
-						ownerFound, ownerName := searchutils.GetOwner(theClient, page)
-						if ownerFound {
-							SpaceOwner = ownerName
+				/*
+					if cfg.SpaceCategory == "demo" {
+						found, page := searchutils.SearchSpacePage(confluence, space.Key)
+						if found {
+							ownerFound, ownerName := searchutils.GetOwner(confluence, page)
+							if ownerFound {
+								SpaceOwner = ownerName
+							}
 						}
 					}
-				}
-
+				*/
 				//htmlutils.WriteWrapLink(f, cfg.ConfHost+"/display/"+spaceKey+"/?pageId="+page.ID, "Space Description")
 
 				if cfg.Groups {
@@ -143,16 +163,23 @@ func CreateSpacePermissionsReport(cfg ReportConfig) { //nolint:funlen
 					for cont {
 						opt.StartAt = start
 						opt.MaxResults = increase
-						groups := theClient.GetAllGroupsWithAnyPermission(space.Key, &opt)
+						groups, err := confluence.GetAllGroupsWithAnyPermission(space.Key, &opt)
+						if err != nil {
+							log.Fatal(err)
+						}
+
 						excellogger.NextCol()
 						for _, group := range groups.Groups {
 							excellogger.ResetCol()
 							excellogger.WiteCellnc(space.Name)
 							excellogger.WiteCellnc(SpaceOwner)
 							//excellogger.WiteCellnc(space.Key)
-							excellogger.WiteCellHyperLinknc(space.Key, cfg.ConfHost+"/spaces/spacepermissions.action?key="+space.Key) //https://confluence.assaabloy.net/spaces/spacepermissions.action?key=REL
+							excellogger.WiteCellHyperLinknc(space.Key, cfg.ConfHost+"/spaces/spacepermissions.action?key="+space.Key)
 							excellogger.WiteCellnc("Group")
-							permissions := theClient.GetGroupPermissionsForSpace(space.Key, group)
+							permissions, err := confluence.GetGroupPermissionsForSpace(space.Key, group)
+							if err != nil {
+								log.Fatal(err)
+							}
 							excellogger.WiteCellnc(group)
 							for _, atype := range *types {
 								if Contains(permissions.Permissions, atype) {
@@ -173,17 +200,17 @@ func CreateSpacePermissionsReport(cfg ReportConfig) { //nolint:funlen
 					}
 				}
 				if cfg.Users {
-					start := 0
+					var start, increase int64
+					start = 0
 					cont := true
-					increase := 50
+					increase = 50
 					for cont {
-						opt.StartAt = start
-						opt.MaxResults = increase
+						opt.StartAt = int(start)
+						opt.MaxResults = int(increase)
 
-						users, resp := theClient.GetAllUsersWithAnyPermission(space.Key, &opt)
-						if resp.StatusCode < 200 || resp.StatusCode > 300 {
-							// one restry...
-							users, _ = theClient.GetAllUsersWithAnyPermission(space.Key, &opt)
+						users, err := confluence.GetAllUsersWithAnyPermission(space.Key, &opt)
+						if err != nil {
+							log.Fatal(err)
 						}
 						//users, err := retry(3,200, theClient.GetAllUsersWithAnyPermission(space.Key, &opt))
 						excellogger.NextCol()
@@ -194,10 +221,9 @@ func CreateSpacePermissionsReport(cfg ReportConfig) { //nolint:funlen
 							//excellogger.WiteCellnc(space.Key)
 							excellogger.WiteCellHyperLinknc(space.Key, cfg.ConfHost+"/spaces/spacepermissions.action?key="+space.Key)
 							excellogger.WiteCellnc("User")
-							permissions, resp := theClient.GetUserPermissionsForSpace(space.Key, user)
-							if resp.StatusCode < 200 || resp.StatusCode > 300 {
-								// one restry...
-								permissions, _ = theClient.GetUserPermissionsForSpace(space.Key, user)
+							permissions, err := confluence.GetUserPermissionsForSpace(space.Key, user)
+							if err != nil {
+								log.Fatal(err)
 							}
 							excellogger.WiteCellnc(user)
 							for _, atype := range *types {
@@ -220,7 +246,7 @@ func CreateSpacePermissionsReport(cfg ReportConfig) { //nolint:funlen
 				}
 			}
 		}
-		if spaces.Size < spincrease {
+		if int(spaces.Size) < spincrease {
 			spcont = false
 		} else {
 			spstart = spstart + spincrease
@@ -233,22 +259,34 @@ func CreateSpacePermissionsReport(cfg ReportConfig) { //nolint:funlen
 	// Save xlsx file by the given path.
 	excellogger.SaveAs(cfg.File)
 	if cfg.Report {
-		var config = client.ConfluenceConfig{}
-		var copt client.OperationOptions
-		config.Username = cfg.ConfUser
-		config.Password = cfg.ConfPass
-		config.UseToken = cfg.UseToken
-		config.URL = cfg.ConfHost
-		config.Debug = false
-		confluenceClient := client.Client(&config)
+		/*
+			var config = client.ConfluenceConfig{}
+			var copt client.OperationOptions
+			config.Username = cfg.ConfUser
+			config.Password = cfg.ConfPass
+			config.UseToken = cfg.UseToken
+			config.URL = cfg.ConfHost
+			config.Debug = false
+			confluenceClient := client.Client(&config)
 
-		copt.Title = "Space Permissions Reports"
-		copt.SpaceKey = "AAAD"
-		_, name := filepath.Split(cfg.File)
-		err := utilities.AddAttachmentAndUpload(confluenceClient, copt, name, cfg.File, "Created by Space Permissions Report")
-		if err != nil {
-			panic(err)
+			copt.Title = "Space Permissions Reports"
+			copt.SpaceKey = "AAAD"
+		*/
+		//		_, name := filepath.Split(cfg.File)
+		res, err := confluence.GetPageId(cfg.Space, cfg.AncestorTitle)
+		if err == nil {
+			if res.Size == 1 {
+				err := confluence.UppdateAttachment(cfg.Space, cfg.AncestorTitle, cfg.File)
+				if err != nil {
+					panic(err)
+				}
+
+			}
+
 		}
+
+		//) .AddAttachmentAndUpload(cfg.Space, name, cfg.File)
+		//AddAttachmentAndUpload(confluenceClient, copt, name, cfg.File, "Created by Space Permissions Report")
 
 	}
 }

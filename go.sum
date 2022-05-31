@@ -31,6 +31,10 @@ github.com/perolo/confluence-client v0.0.0-20220408191902-81a41e5cb047 h1:gOlfmq
 github.com/perolo/confluence-client v0.0.0-20220408191902-81a41e5cb047/go.mod h1:guc/tykEIQ9iuQNfa8j6v9iMGBgHpFCUfkdjL/p2hpA=
 github.com/perolo/confluence-go-api v1.3.1-0.20220531132435-0a51b2eabaee h1:FhNmC4YLInPuorHofwIQFkPNr54lbXiNgN8wPeC0cm4=
 github.com/perolo/confluence-go-api v1.3.1-0.20220531132435-0a51b2eabaee/go.mod h1:XWaJdhwW5/Ld3/m1ZZnDKhpo56bvDZf/kLUBk2jFwZ0=
+github.com/perolo/confluence-go-api v1.3.1-0.20220531144833-ea37a9d609b7 h1:7/ltkgBa3X3oP8t3XwEN5T/JLN4z74LKqySOy1wgLX8=
+github.com/perolo/confluence-go-api v1.3.1-0.20220531144833-ea37a9d609b7/go.mod h1:XWaJdhwW5/Ld3/m1ZZnDKhpo56bvDZf/kLUBk2jFwZ0=
+github.com/perolo/confluence-go-api v1.3.1-0.20220531145749-f9f1aa461466 h1:k0BGnXUhGIZNk4rBVEi5P30Vf4j8z8YQn/bMcRohKv0=
+github.com/perolo/confluence-go-api v1.3.1-0.20220531145749-f9f1aa461466/go.mod h1:XWaJdhwW5/Ld3/m1ZZnDKhpo56bvDZf/kLUBk2jFwZ0=
 github.com/perolo/excel-utils v0.0.0-20220404123251-ae7963967236 h1:q+aSVOhEKXkE635/gq9vYW7BJk5gNDIE974z8vmi9Kw=
 github.com/perolo/excel-utils v0.0.0-20220404123251-ae7963967236/go.mod h1:fn3r3AS2Np7f52J8O/WhUUobsgCjuLZi+AlprqbJYRI=
 github.com/perolo/excellogger v0.0.0-20220502095559-abc577625eac h1:N2xWKvV5fZt41f86pVNWfynPRDD0pr98MfykdRjuCIE=
