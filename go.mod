@@ -7,7 +7,7 @@ require (
 	github.com/magiconair/properties v1.8.6
 	github.com/perolo/ad-utils v0.0.0-20220412081416-aef9a45b595b
 	github.com/perolo/confluence-client v0.0.0-20220408191902-81a41e5cb047
-	github.com/perolo/confluence-go-api v1.3.1-0.20220419174833-1fc79fcdae5e
+	github.com/perolo/confluence-go-api v1.3.1-0.20220531132435-0a51b2eabaee
 	github.com/perolo/excellogger v0.0.0-20220502095559-abc577625eac
 	github.com/perolo/go-gitlab v0.0.0-20220412085632-ecfdd518b625
 	github.com/perolo/jira-scripts v0.0.0-20220411180542-987c6aabe088

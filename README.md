@@ -75,6 +75,27 @@ users=true
 ```
 ##### Requires plugin: REST Extender for Confluence   https://it-lab-site.atlassian.net/wiki/spaces/RAEC/overview 
 
+## AddGroupPage
+Creates a Confluence page with the confluence User List for all groups in Confluence
+
+* Modify the properties file
+* Run the script        ```
+                        go run .\addgrouppage\main\main.go -prop .\addgrouppage\main\addgrouppage.properties
+                        ```
+ 
+The parameters needed are defined in the properties file:  
+```
+confhost=http://192.168.50.40:8090
+confuser=admin
+confpass=admin
+conftoken=false
+usetoken=false
+space=ds
+ancestortitle=Welcome to Confluence
+
+```
+
+
 
 ## Sync AD Group
 (under development)

@@ -2,13 +2,13 @@ package addgrouppage
 
 import (
 	"fmt"
-	"github.com/magiconair/properties"
-	"github.com/perolo/confluence-client/client"
-	"github.com/perolo/confluence-scripts/utilities"
-	"github.com/perolo/confluence-scripts/utilities/htmlutils"
 	"io/ioutil"
 	"log"
 	"os"
+
+	"github.com/magiconair/properties"
+	goconfluence "github.com/perolo/confluence-go-api"
+	"github.com/perolo/confluence-scripts/utilities/htmlutils"
 )
 
 type Config struct {
@@ -23,7 +23,6 @@ type Config struct {
 
 func AddGroupPage(propPtr string) {
 	var cfg Config
-	var copt client.OperationOptions
 
 	fmt.Printf("%%%%%%%%%%  Add Group Page %%%%%%%%%%%%%%\n")
 
@@ -33,30 +32,23 @@ func AddGroupPage(propPtr string) {
 		log.Fatal(err)
 	}
 
-	var config = client.ConfluenceConfig{}
-
-	if cfg.UseToken {
-		cfg.ConfPass = cfg.ConfToken
-	}
-
-	config.Username = cfg.ConfUser
-	config.Password = cfg.ConfPass
-	config.UseToken = cfg.UseToken
-	config.URL = cfg.ConfHost
-	config.Debug = false
-	config.UseToken = cfg.UseToken
-
 	fmt.Printf("->Connecting to %s\n", cfg.ConfHost)
 	fmt.Printf("		->as %s\n", cfg.ConfUser)
 	fmt.Printf("		->pass %s\n", cfg.ConfPass)
 	fmt.Printf("		->using token:  %t\n", cfg.UseToken)
 
-	confluence := client.Client(&config)
+	var confluence *goconfluence.API
+	var err error
+	if cfg.UseToken {
+		confluence, err = goconfluence.NewAPI(cfg.ConfHost, "", cfg.ConfToken)
+	} else {
+		confluence, err = goconfluence.NewAPI(cfg.ConfHost, cfg.ConfUser, cfg.ConfPass)
+	}
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	copt.SpaceKey = cfg.Space
-	copt.AncestorTitle = cfg.AncestorTitle
-
-	var gropt client.GetGroupMembersOptions
+	var gropt goconfluence.GetGroupMembersOptions
 	grcont := true
 	grstart := 0
 	grmax := 50
@@ -77,10 +69,6 @@ func AddGroupPage(propPtr string) {
 				}
 
 				defer f.Close()
-				copt.Title = "Group: " + group
-
-				copt.Filepath = f.Name()
-				copt.BodyOnly = true
 
 				htmlutils.WriteHeader2(f, "Introduction")
 				htmlutils.WriteParagraf(f, "")
@@ -93,12 +81,19 @@ func AddGroupPage(propPtr string) {
 					"</ac:structured-macro> 	</p>", group)
 				htmlutils.WriteParagraf(f, block)
 				htmlutils.WriteParagraf(f, "")
-				//	t := time.Now()
-
-				if !utilities.CheckPageExists2(copt, confluence) {
-					if confluence.AddOrUpdatePage(copt) {
-						fmt.Printf("%s uploaded ok", copt.Title)
+				pagename := "Group: " + group
+				ancestid, err2 := confluence.GetPageId(cfg.Space, cfg.AncestorTitle)
+				if err2 == nil && ancestid.Size == 1 {
+					s, _ := confluence.GetPageId(cfg.Space, pagename)
+					if s.Size == 0 {
+						fmt.Printf("Creating page: %s \n", pagename)
+						confluence.AddPage(pagename, cfg.Space, f.Name(), true, true, ancestid.Results[0].ID)
+					} else {
+						fmt.Printf("Skip creating page: %s \n", pagename)
 					}
+
+				} else {
+					return
 				}
 			}
 		}
