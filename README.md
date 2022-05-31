@@ -34,7 +34,7 @@ Requires a user with admin permissions in Confluence
 
 * Modify the properties file
 * Run the script        ```
-                        go run spacepermissionsreport.go -prop spacepermissionsreport.properties
+                        go run .\main.go -prop .\spacepermissionsreport.properties
                         ```
  
 The parameters needed are defined in the properties file:  
@@ -94,6 +94,31 @@ space=ds
 ancestortitle=Welcome to Confluence
 
 ```
+
+## Personal Spaces Report
+Creates a Excel Sheet with the users and groups and the permissions in all personal spaces.
+Could be used to review/archive personal spaces of deactivated users.
+Requires a user with admin permissions in Confluence 
+
+* Modify the properties file
+* Run the script        ```
+                        go run .\main.go -prop .\spacepermissionsreport.properties
+                        ```
+ 
+The parameters needed are defined in the properties file:  
+```
+confhost=http://192.168.50.40:8090
+confuser=admin
+confpass=admin
+conftoken=false
+usetoken=false
+space=ds
+ancestortitle=Welcome to Confluence
+report=true
+file=C:/temp/Report%s.xlsx
+simple=false
+```
+##### Requires plugin: REST Extender for Confluence   https://it-lab-site.atlassian.net/wiki/spaces/RAEC/overview 
 
 
 

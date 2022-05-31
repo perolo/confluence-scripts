@@ -1,28 +1,28 @@
 package personalspacesreport
 
 import (
-	"bufio"
 	"flag"
 	"fmt"
+	"log"
+	"time"
+
 	"github.com/magiconair/properties"
 	goconfluence "github.com/perolo/confluence-go-api"
 	"github.com/perolo/excellogger"
 	"golang.org/x/exp/slices"
-	"log"
-	"os"
-	"path/filepath"
-	"time"
 )
 
 type ReportConfig struct {
-	ConfHost  string `properties:"confhost"`
-	ConfUser  string `properties:"confuser"`
-	ConfPass  string `properties:"confpass"`
-	ConfToken string `properties:"conftoken"`
-	UseToken  bool   `properties:"usetoken"`
-	File      string `properties:"file"`
-	Simple    bool   `properties:"simple"`
-	Report    bool   `properties:"report"`
+	ConfHost      string `properties:"confhost"`
+	ConfUser      string `properties:"confuser"`
+	ConfPass      string `properties:"confpass"`
+	ConfToken     string `properties:"conftoken"`
+	UseToken      bool   `properties:"usetoken"`
+	File          string `properties:"file"`
+	Simple        bool   `properties:"simple"`
+	Report        bool   `properties:"report"`
+	Space         string `properties:"space"`
+	AncestorTitle string `properties:"ancestortitle"`
 	//	Bindusername string `properties:"bindusername"`
 	//	Bindpassword string `properties:"bindpassword"`
 	//	BaseDN       string `properties:"basedn"`
@@ -124,7 +124,6 @@ func CreatePersonalSpacesReport(cfg ReportConfig) {
 	excellogger.NextLine()
 
 	for spcont {
-		//spopt := client.SpaceOptions{Start: spstart, Limit: spincrease, Type: "personal", Status: "current"}
 		spopt := goconfluence.AllSpacesQuery{Start: spstart, Limit: spincrease, Type: "personal", Status: "current"}
 		spaces, _ = confClient.GetAllSpaces(spopt)
 		opt := goconfluence.PaginationOptions{}
@@ -205,42 +204,16 @@ func CreatePersonalSpacesReport(cfg ReportConfig) {
 	// Save xlsx file by the given path.
 	excellogger.SaveAs(cfg.File)
 	if cfg.Report {
-
-		file, err3 := os.Open(cfg.File)
-		if err3 != nil {
-			log.Fatal(err3)
-		}
-
-		reader := bufio.NewReader(file)
-
-		pageid := "65551"
-		search, err2 := confClient.GetAttachments(pageid)
-		if err2 != nil {
-			log.Fatal(err2)
-		}
-		if search.Size == 0 {
-			_, e := confClient.UploadAttachment(pageid, cfg.File, reader)
-			if e != nil {
-				log.Fatal(e)
-			}
-		} else {
-			_, name := filepath.Split(cfg.File)
-			for _, v := range search.Results {
-				if v.Title == name {
-					_, e := confClient.UpdateAttachment(pageid, name, v.ID, reader)
-					if e != nil {
-						log.Fatal(e)
+		if cfg.Report {
+			res, err := confClient.GetPageId(cfg.Space, cfg.AncestorTitle)
+			if err == nil {
+				if res.Size == 1 {
+					err := confClient.UppdateAttachment(cfg.Space, cfg.AncestorTitle, cfg.File)
+					if err != nil {
+						panic(err)
 					}
 				}
 			}
 		}
-
-		/*
-			err := utilities.AddAttachmentAndUpload(confluenceClient, copt, name, cfg.File, "Created by PersonalSpacesReport")
-			if err != nil {
-				panic(err)
-			}
-
-		*/
 	}
 }

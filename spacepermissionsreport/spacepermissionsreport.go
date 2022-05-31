@@ -259,20 +259,6 @@ func CreateSpacePermissionsReport(cfg ReportConfig) { //nolint:funlen
 	// Save xlsx file by the given path.
 	excellogger.SaveAs(cfg.File)
 	if cfg.Report {
-		/*
-			var config = client.ConfluenceConfig{}
-			var copt client.OperationOptions
-			config.Username = cfg.ConfUser
-			config.Password = cfg.ConfPass
-			config.UseToken = cfg.UseToken
-			config.URL = cfg.ConfHost
-			config.Debug = false
-			confluenceClient := client.Client(&config)
-
-			copt.Title = "Space Permissions Reports"
-			copt.SpaceKey = "AAAD"
-		*/
-		//		_, name := filepath.Split(cfg.File)
 		res, err := confluence.GetPageId(cfg.Space, cfg.AncestorTitle)
 		if err == nil {
 			if res.Size == 1 {
@@ -280,13 +266,7 @@ func CreateSpacePermissionsReport(cfg ReportConfig) { //nolint:funlen
 				if err != nil {
 					panic(err)
 				}
-
 			}
-
 		}
-
-		//) .AddAttachmentAndUpload(cfg.Space, name, cfg.File)
-		//AddAttachmentAndUpload(confluenceClient, copt, name, cfg.File, "Created by Space Permissions Report")
-
 	}
 }
