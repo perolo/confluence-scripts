@@ -12,27 +12,13 @@ import (
 	"github.com/perolo/excellogger"
 )
 
-// Contains tells whether a contains x.
-func Contains(a []string, x string) bool {
-	for _, n := range a {
-		if x == n {
-			return true
-		}
-	}
-	return false
-}
-
 type ReportConfig struct {
 	ConfHost      string `properties:"confhost"`
-	ConfUser      string `properties:"confuser"`
-	ConfPass      string `properties:"confpass"`
-	ConfToken     string `properties:"conftoken"`
-	UseToken      bool   `properties:"usetoken"`
-	Groups        bool   `properties:"groups"`
-	Users         bool   `properties:"users"`
+	User          string `properties:"user"`
+	Pass          string `properties:"pass"`
 	File          string `properties:"file"`
-	Report        bool   `properties:"report"`
 	Space         string `properties:"space"`
+	Report        bool   `properties:"report"`
 	AncestorTitle string `properties:"ancestortitle"`
 }
 
@@ -51,29 +37,11 @@ func SpaceGroupsUsersReport(propPtr string) {
 	CreateGroupUserReport(cfg)
 }
 
-func addUserToGroup(user string, group string) {
-
-}
-
 func CreateGroupUserReport(cfg ReportConfig) { //nolint:funlen
-
-	excellogger.NewFile(nil)
-
-	excellogger.SetCellFontHeader()
-	excellogger.WiteCellln("Introduction")
-	excellogger.WiteCellln("Please Do not edit this page!")
-	excellogger.WiteCellln("This page is created by the User Report script: " + "https://github.com/perolo/confluence-scripts" + "/" + "SpaceGroupsUsersReport")
-	t := time.Now()
-	excellogger.WiteCellln("Created by: " + cfg.ConfUser + " : " + t.Format(time.RFC3339))
-	excellogger.WiteCellln("")
 
 	var confluence *goconfluence.API
 	var err error
-	if cfg.UseToken {
-		confluence, err = goconfluence.NewAPI(cfg.ConfHost, "", cfg.ConfToken)
-	} else {
-		confluence, err = goconfluence.NewAPI(cfg.ConfHost, cfg.ConfUser, cfg.ConfPass)
-	}
+	confluence, err = goconfluence.NewAPI(cfg.ConfHost, cfg.User, cfg.Pass)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -83,6 +51,7 @@ func CreateGroupUserReport(cfg ReportConfig) { //nolint:funlen
 		log.Fatal(err2)
 	}
 
+	// TODO Assuming max 40 groups
 	type bvec [40]bool
 	usermap := make(map[string]bvec)
 	indexgroup := 0
@@ -106,6 +75,15 @@ func CreateGroupUserReport(cfg ReportConfig) { //nolint:funlen
 		indexgroup++
 	}
 
+	excellogger.NewFile(nil)
+	excellogger.SetCellFontHeader()
+	excellogger.WiteCellln("Introduction")
+	excellogger.WiteCellln("Please Do not edit this page!")
+	excellogger.WiteCellln("This page is created by the User Report script: " + "https://github.com/perolo/confluence-scripts" + "/" + "SpaceGroupsUsersReport")
+	t := time.Now()
+	excellogger.WiteCellln("Created by: " + cfg.User + " : " + t.Format(time.RFC3339))
+	excellogger.WiteCellln("")
+
 	excellogger.SetCellFontHeader2()
 	excellogger.WiteCellln("Users and Groups")
 	excellogger.NextLine()
@@ -128,7 +106,7 @@ func CreateGroupUserReport(cfg ReportConfig) { //nolint:funlen
 	excellogger.SetAutoColWidth()
 	excellogger.AutoFilterEnd()
 
-	//excellogger.SetColWidth("A", "A", 40)
+	excellogger.SetColWidth("A", "A", 40)
 	// Save xlsx file by the given path.
 	excellogger.SaveAs(cfg.File)
 	if cfg.Report {
