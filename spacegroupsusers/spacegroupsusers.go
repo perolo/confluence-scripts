@@ -37,6 +37,8 @@ func SpaceGroupsUsersReport(propPtr string) {
 	CreateGroupUserReport(cfg)
 }
 
+const MAX_GROUPS = 40
+
 func CreateGroupUserReport(cfg ReportConfig) { //nolint:funlen
 
 	var confluence *goconfluence.API
@@ -46,20 +48,31 @@ func CreateGroupUserReport(cfg ReportConfig) { //nolint:funlen
 		log.Fatal(err)
 	}
 
-	groups, err2 := confluence.GetGroups(nil)
+	var gopt goconfluence.GetGroupMembersOptions
+	gopt.Start = 0
+	gopt.Limit = MAX_GROUPS
+
+	groups, err2 := confluence.GetGroups(&gopt)
 	if err2 != nil {
 		log.Fatal(err2)
 	}
+	if groups.Size > MAX_GROUPS {
+		log.Fatal("Too many groups")
+	}
 
-	// TODO Assuming max 40 groups
-	type bvec [40]bool
+	// TODO Assuming max MAX_GROUPS groups
+	type bvec [MAX_GROUPS]bool
 	usermap := make(map[string]bvec)
 	indexgroup := 0
 	for _, group := range groups.Groups {
-
-		users, err3 := confluence.GetGroupMembers(group.Name)
+		gopt.Start = 0
+		gopt.Limit = MAX_GROUPS * 10
+		users, err3 := confluence.GetGroupMembers(group.Name, &gopt)
 		if err3 != nil {
 			log.Fatal(err3)
+		}
+		if users.Size > MAX_GROUPS*10 {
+			log.Fatal("Too many users")
 		}
 		for _, member := range users.Members {
 			if _, ok := usermap[member.DisplayName]; !ok {
